@@ -1,2 +1,4 @@
 *.o
 *.code-workspace
+.vscode/
+out/
