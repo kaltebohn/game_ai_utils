@@ -35,27 +35,28 @@ class MonteCarloTreeNode {
       this->searchChild(whole_play_cnt);
     }
 
-    /* 各子節点の状態と評価値を出力する。 */
+    /* [デバッグ] 各子節点の状態と評価値を出力する。 */
     if (MonteCarloTreeNode::kIsDebug) {
       for (const MonteCarloTreeNode<GameState, GameAction>& child : this->children_) {
         std::cout << "********************" << std::endl;
         std::cout << "総プレイアウト回数: " << whole_play_cnt << std::endl;
         std::cout << "節点の通過回数: " << child.play_cnt_ << std::endl;
         std::cout << "得点和: " << child.sum_score_ << std::endl;
-        std::cout << "評価値: " << child.evaluate(whole_play_cnt) << std::endl;
+        std::cout << "勝率: " << child.meanScore() << std::endl;
         std::cout << "********************" << std::endl;
         child.current_state_.print();
         std::cout << "********************" << std::endl;
       }
     }
 
-    return this->select(whole_play_cnt).current_state_.getLastAction();
+    /* 最善手を選んで返す。 */
+    return this->selectChildWithBestMeanScore().current_state_.getLastAction();
   }
 
  private:
-  static constexpr bool kIsDebug = true;        // デバッグ出力あり？
-  static constexpr int kPlayoutLimit = 10000;  // プレイアウト回数の制限。
-  static constexpr int kExpandThreshold = 1;   // 何回探索されたら節点を展開するか。
+  static constexpr bool kIsDebug = false;      // デバッグ出力あり？
+  static constexpr int kPlayoutLimit = 1000;   // プレイアウト回数の制限。
+  static constexpr int kExpandThreshold = 3;   // 何回探索されたら節点を展開するか。
   static constexpr double kEvaluationMax =
       std::numeric_limits<double>::infinity(); // 評価値の上限。
   GameState current_state_;                    // 現在の局面情報。
@@ -70,6 +71,7 @@ class MonteCarloTreeNode {
 
     /* 既に勝敗がついていたら、結果を返す。 */
     if (this->current_state_.isFinished()) {
+      this->sum_score_ += this->current_state_.getScore(this->player_num_);
       return this->current_state_.getScore(this->player_num_);
     }
 
@@ -80,16 +82,20 @@ class MonteCarloTreeNode {
 
     /* 子供がいる場合は、選択して掘り進める。 */
     if (this->children_.size() > 0) {
-      MonteCarloTreeNode<GameState, GameAction>& child = this->select(whole_play_cnt);
-      return child.searchChild(whole_play_cnt);
+      MonteCarloTreeNode<GameState, GameAction>& child = this->selectChildToSearch(whole_play_cnt);
+      int result = child.searchChild(whole_play_cnt);
+      this->sum_score_ += result;
+      return result;
     }
-    
-    /* プレイアウトの結果を返す。 */
-    return this->playout();
+
+    /* 子供がいない場合は、プレイアウトの結果を返す。 */
+    int result = this->playout();
+    this->sum_score_ += result;
+    return result;
   }
 
   /* 子節点中で最も評価値の高いものを返す。 */
-  MonteCarloTreeNode<GameState, GameAction>& select(
+  MonteCarloTreeNode<GameState, GameAction>& selectChildToSearch(
       int whole_play_cnt) {
     if (this->children_.size() <= 0) {
       std::cerr << "子節点がありません。" << std::endl;
@@ -100,6 +106,22 @@ class MonteCarloTreeNode {
         this->children_.begin(), this->children_.end(),
         [=](const MonteCarloTreeNode& a, const MonteCarloTreeNode& b) {
           return a.evaluate(whole_play_cnt) < b.evaluate(whole_play_cnt);
+        });
+
+    return *best_child;
+  }
+
+  /* 子節点中で最も勝率の高いものを返す。 */
+  MonteCarloTreeNode<GameState, GameAction>& selectChildWithBestMeanScore() {
+    if (this->children_.size() <= 0) {
+      std::cerr << "子節点がありません。" << std::endl;
+      std::terminate();
+    }
+
+    auto best_child = std::max_element(
+        this->children_.begin(), this->children_.end(),
+        [=](const MonteCarloTreeNode& a, const MonteCarloTreeNode& b) {
+          return a.meanScore() < b.meanScore();
         });
 
     return *best_child;
@@ -132,6 +154,11 @@ class MonteCarloTreeNode {
   double evaluate(int whole_play_cnt) const {
     return MonteCarloTreeNode::ucb1(whole_play_cnt, this->play_cnt_,
                                     this->sum_score_);
+  }
+
+  /* 現在局面の平均得点を返す。勝ち点1負け点0のゲームなら勝率。 */
+  double meanScore() const {
+    return (double)this->sum_score_ / this->play_cnt_;
   }
 
   /* ucb1値を返す。 */
