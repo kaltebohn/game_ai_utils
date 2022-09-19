@@ -35,10 +35,10 @@ const std::array<OthelloState::bitboard, 64> OthelloState::kSquare{
     0x00'00'00'00'00'00'00'02, 0x00'00'00'00'00'00'00'01};
 
 OthelloState OthelloState::next(const coord& action) const {
-  const bitboard put = OthelloState::coord2Bit(action);
+  const bitboard put{OthelloState::coord2Bit(action)};
 
-  bitboard my_board = {};
-  bitboard opponent_board = {};
+  bitboard my_board{};
+  bitboard opponent_board{};
   if (this->cur_turn_ == OthelloState::kBlackTurn) {
     my_board = this->black_board_;
     opponent_board = this->white_board_;
@@ -46,12 +46,12 @@ OthelloState OthelloState::next(const coord& action) const {
     my_board = this->white_board_;
     opponent_board = this->black_board_;
   }
-  bitboard reversed_squares = {};
+  bitboard reversed_squares{};
 
   /* putが置かれることで反転される箇所を8方向に走査する。 */
   for (int i = 0; i < 8; i++) {
-    bitboard reversed_line = {};  // ある1方向において反転された箇所の全体。
-    bitboard cur_square = this->nextSquare(put, i);  // 反転可能性を見るマス。
+    bitboard reversed_line{};  // ある1方向において反転された箇所の全体。
+    bitboard cur_square{this->nextSquare(put, i)};  // 反転可能性を見るマス。
     while ((cur_square != (bitboard)0) &&
            ((cur_square & opponent_board) != (bitboard)0)) {
       reversed_line |= cur_square;
@@ -66,7 +66,7 @@ OthelloState OthelloState::next(const coord& action) const {
   my_board ^= (put | reversed_squares);
   opponent_board ^= reversed_squares;
 
-  OthelloState result = OthelloState(*this);
+  OthelloState result{*this};
   result.last_action_ = action;
   if (this->cur_turn_ == OthelloState::kBlackTurn) {
     result.cur_turn_ = kWhiteTurn;
@@ -87,8 +87,8 @@ OthelloState OthelloState::next(const coord& action) const {
 }
 
 std::vector<OthelloState::coord> OthelloState::legalActions() const {
-  std::vector<coord> result = {};
-  bitboard tmp = this->legalBoard();
+  std::vector<coord> result{};
+  bitboard tmp{this->legalBoard()};
   for (int i = 7; i >= 0; i--) {
     for (int j = 7; j >= 0; j--) {
       if (tmp % 2 == 1) {
@@ -102,13 +102,13 @@ std::vector<OthelloState::coord> OthelloState::legalActions() const {
 
 bool OthelloState::isFinished() const {
   /* 現在手番の合法手全体。 */
-  const bitboard my_legal_board = this->legalBoard();
+  const bitboard my_legal_board{this->legalBoard()};
 
   /* 次手番の合法手全体。 */
-  OthelloState next_state = OthelloState(*this);
+  OthelloState next_state{OthelloState(*this)};
   next_state.cur_turn_ =
       (this->cur_turn_ == OthelloState::kBlackTurn) ? kWhiteTurn : kBlackTurn;
-  const bitboard opponent_legal_board = next_state.legalBoard();
+  const bitboard opponent_legal_board{next_state.legalBoard()};
 
   /* 現在手番だけで合法手がなければ、パス。次手番でも合法手がなければ、終局。 */
   return my_legal_board == (bitboard)0 && opponent_legal_board == (bitboard)0;
@@ -136,9 +136,9 @@ int OthelloState::getScore(const int player_num) const {
 }
 
 void OthelloState::print() const {
-  std::vector<int> squares = {};
-  bitboard tmp_black = this->black_board_;
-  bitboard tmp_white = this->white_board_;
+  std::vector<int> squares{};
+  bitboard tmp_black{this->black_board_};
+  bitboard tmp_white{this->white_board_};
 
   for (int i = 0; i < 8; i++) {
     for (int j = 0; j < 8; j++) {
@@ -175,8 +175,8 @@ void OthelloState::print() const {
 };
 
 OthelloState::bitboard OthelloState::legalBoard() const {
-  bitboard my_board = {};
-  bitboard opponent_board = {};
+  bitboard my_board{};
+  bitboard opponent_board{};
   if (this->cur_turn_ == OthelloState::kBlackTurn) {
     my_board = this->black_board_;
     opponent_board = this->white_board_;
@@ -197,8 +197,8 @@ OthelloState::bitboard OthelloState::legalBoard() const {
   /* 空のマス全体。 */
   const bitboard blank_squares = ~(my_board | opponent_board);
 
-  bitboard tmp_board = {};
-  bitboard result = {};
+  bitboard tmp_board{};
+  bitboard result{};
 
   /* 左方向に置ける場所を探索。 */
   /* 自分のマスの左側に挟めるマスが連続して存在する限り、そこにbitを立てていく。
@@ -290,13 +290,13 @@ OthelloState::bitboard OthelloState::nextSquare(const bitboard square,
 
 bool OthelloState::isPass() const {
   /* 現在手番の合法手全体。 */
-  const bitboard my_legal_board = this->legalBoard();
+  const bitboard my_legal_board{this->legalBoard()};
 
   /* 次手番の合法手全体。 */
-  OthelloState next_state = OthelloState(*this);
+  OthelloState next_state{OthelloState(*this)};
   next_state.cur_turn_ =
       (this->cur_turn_ == OthelloState::kBlackTurn) ? kWhiteTurn : kBlackTurn;
-  const bitboard opponent_legal_board = next_state.legalBoard();
+  const bitboard opponent_legal_board{next_state.legalBoard()};
 
   /* 現在手番だけで合法手がなければ、パス。次手番でも合法手がなければ、終局。 */
   return my_legal_board == (bitboard)0 && opponent_legal_board != (bitboard)0;

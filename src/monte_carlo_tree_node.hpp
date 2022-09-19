@@ -12,14 +12,14 @@
 template <class GameState, typename GameAction>
 class MonteCarloTreeNode {
  public:
-  MonteCarloTreeNode() : current_state_({}), player_num_() {}
+  MonteCarloTreeNode() : current_state_(), player_num_() {}
 
   MonteCarloTreeNode(const GameState& state, const int player_num)
       : current_state_(state), player_num_(player_num) {}
 
   /* 根用。クラスの外側から探索を指示されて最善手を返す。 */
   GameAction search() {
-    int whole_play_cnt = 0;
+    int whole_play_cnt{};
 
     this->expand();
 
@@ -54,16 +54,15 @@ class MonteCarloTreeNode {
   }
 
  private:
-  static constexpr bool kIsDebug = false;    // デバッグ出力あり？
-  static constexpr int kPlayoutLimit = 1000; // プレイアウト回数の制限。
-  static constexpr int kExpandThreshold = 3; // 何回探索されたら節点を展開するか。
-  static constexpr double kEvaluationMax =
-      std::numeric_limits<double>::infinity();  // 評価値の上限。
+  static constexpr bool kIsDebug{false};    // デバッグ出力あり？
+  static constexpr int kPlayoutLimit{1000}; // プレイアウト回数の制限。
+  static constexpr int kExpandThreshold{3}; // 何回探索されたら節点を展開するか。
+  static constexpr double kEvaluationMax{std::numeric_limits<double>::infinity()};  // 評価値の上限。
   GameState current_state_;                     // 現在の局面情報。
   std::vector<MonteCarloTreeNode> children_;  // 子節点(あり得る局面の集合)。
   int player_num_;                            // 自分のプレイヤ番号。
-  int play_cnt_;   // この節点を探索した回数。
-  int sum_score_;  // この局面を通るプレイアウトで得られた得点の総数。勝1点負0点制なら勝利数と一致する。
+  int play_cnt_{};   // この節点を探索した回数。
+  int sum_score_{};  // この局面を通るプレイアウトで得られた得点の総数。勝1点負0点制なら勝利数と一致する。
 
   /* 節点用。子節点を再帰的に掘り進め、勝利数を逆伝播。 */
   int searchChild(int whole_play_cnt) {
@@ -85,13 +84,13 @@ class MonteCarloTreeNode {
     if (this->children_.size() > 0) {
       MonteCarloTreeNode<GameState, GameAction>& child =
           this->selectChildToSearch(whole_play_cnt);
-      int result = child.searchChild(whole_play_cnt);
+      int result{child.searchChild(whole_play_cnt)};
       this->sum_score_ += result;
       return result;
     }
 
     /* 子供がいない場合は、プレイアウトの結果を返す。 */
-    int result = this->playout();
+    int result{this->playout()};
     this->sum_score_ += result;
     return result;
   }
@@ -104,13 +103,11 @@ class MonteCarloTreeNode {
       std::terminate();
     }
 
-    auto best_child = std::max_element(
+    return *std::max_element(
         this->children_.begin(), this->children_.end(),
         [=](const MonteCarloTreeNode& a, const MonteCarloTreeNode& b) {
           return a.evaluate(whole_play_cnt) < b.evaluate(whole_play_cnt);
         });
-
-    return *best_child;
   }
 
   /* 子節点中で最も勝率の高いものを返す。 */
@@ -120,18 +117,16 @@ class MonteCarloTreeNode {
       std::terminate();
     }
 
-    auto best_child = std::max_element(
+    return *std::max_element(
         this->children_.begin(), this->children_.end(),
         [=](const MonteCarloTreeNode& a, const MonteCarloTreeNode& b) {
           return a.meanScore() < b.meanScore();
         });
-
-    return *best_child;
   }
 
   /* 可能な次局面すべてを子節点として追加。 */
   void expand() {
-    std::vector<GameAction> actions = this->current_state_.legalActions();
+    std::vector<GameAction> actions{this->current_state_.legalActions()};
     this->children_.resize(actions.size());
     std::transform(actions.begin(), actions.end(), this->children_.begin(),
                    [&](auto action) {
@@ -143,7 +138,7 @@ class MonteCarloTreeNode {
 
   /* プレイアウトを実施し、結果を返す。 */
   int playout() {
-    GameState state = this->current_state_;
+    GameState state{this->current_state_};
 
     while (!state.isFinished()) {
       state = state.next(MonteCarloTreeNode::randomAction(state));
@@ -180,7 +175,7 @@ class MonteCarloTreeNode {
     std::random_device seed_gen;
     std::default_random_engine rand_engine(seed_gen());
 
-    std::vector<GameAction> actions = first_state.legalActions();
+    std::vector<GameAction> actions{first_state.legalActions()};
     std::uniform_int_distribution<int> dist(0, actions.size() - 1);
 
     return actions.at(dist(rand_engine));

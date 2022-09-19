@@ -5,7 +5,7 @@
 #include "othello_state.hpp"
 
 void pvp() {
-  OthelloState state = OthelloState();
+  OthelloState state{};
   while (!state.isFinished()) {
     if (state.getCurTurn() == OthelloState::kBlackTurn) {
       std::cout << "黒の手番" << std::endl;
@@ -18,7 +18,7 @@ void pvp() {
     std::cout << std::endl;
 
     std::cout << "石を置く場所を指定してください。" << std::endl;
-    OthelloState::coord action = {};
+    OthelloState::coord action{};
     std::cout << "着手を入力してください。" << std::endl;
     std::cout << ">> ";
     std::cin >> action.first >> action.second;
@@ -45,7 +45,7 @@ void pvp() {
 }
 
 void monte_carlo() {
-  OthelloState state = OthelloState();
+  OthelloState state{};
 
   int player_color;
   int tmp;
@@ -76,7 +76,7 @@ void monte_carlo() {
     std::cout << "********************" << std::endl;
 
     state.print();
-    OthelloState::coord action = {};
+    OthelloState::coord action{};
     if (state.getCurTurn() != player_color) {
       int opponent_color = (player_color == OthelloState::kBlackTurn)
                            ? OthelloState::kWhiteTurn : OthelloState::kBlackTurn;

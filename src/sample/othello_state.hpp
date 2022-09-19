@@ -10,8 +10,8 @@ class OthelloState {
   using bitboard = uint64_t;
   using coord = std::pair<int, int>;  // A4は{0, 3} で表現。
 
-  static constexpr int kBlackTurn = 0;
-  static constexpr int kWhiteTurn = 1;
+  static constexpr int kBlackTurn{0};
+  static constexpr int kWhiteTurn{1};
 
   OthelloState()
       : cur_turn_(OthelloState::kBlackTurn),
@@ -88,7 +88,7 @@ class OthelloState {
 
   /* bitboardの1を数える。 */
   static int count(const bitboard src) {
-    bitboard tmp = src;
+    bitboard tmp{src};
     tmp = (tmp & 0x5555555555555555) +
           (tmp >> 1 & 0x5555555555555555);   // 2bits区切でビット数を数える。
     tmp = (tmp & 0x3333333333333333) +
