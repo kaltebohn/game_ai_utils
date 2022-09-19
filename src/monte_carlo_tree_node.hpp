@@ -36,7 +36,7 @@ class MonteCarloTreeNode {
     }
 
     /* [デバッグ] 各子節点の状態と評価値を出力する。 */
-    if (MonteCarloTreeNode::kIsDebug) {
+    if (MonteCarloTreeNode::kIsDebugMode) {
       for (const MonteCarloTreeNode<GameState, GameAction>& child : this->children_) {
         std::cout << "********************" << std::endl;
         std::cout << "総プレイアウト回数: " << whole_play_cnt << std::endl;
@@ -54,15 +54,16 @@ class MonteCarloTreeNode {
   }
 
  private:
-  static constexpr bool kIsDebug{false};    // デバッグ出力あり？
-  static constexpr int kPlayoutLimit{1000}; // プレイアウト回数の制限。
-  static constexpr int kExpandThreshold{3}; // 何回探索されたら節点を展開するか。
-  static constexpr double kEvaluationMax{std::numeric_limits<double>::infinity()};  // 評価値の上限。
-  GameState current_state_;                     // 現在の局面情報。
-  std::vector<MonteCarloTreeNode> children_;  // 子節点(あり得る局面の集合)。
-  int player_num_;                            // 自分のプレイヤ番号。
-  int play_cnt_{};   // この節点を探索した回数。
-  int sum_score_{};  // この局面を通るプレイアウトで得られた得点の総数。勝1点負0点制なら勝利数と一致する。
+  static constexpr bool kIsDebugMode{false}; // デバッグ出力あり？
+  static constexpr int kPlayoutLimit{1000};  // プレイアウト回数の制限。
+  static constexpr int kExpandThreshold{3};  // 何回探索されたら節点を展開するか。
+  static constexpr double kEvaluationMax{std::numeric_limits<double>::infinity()}; // 評価値の上限。
+
+  GameState current_state_;                    // 現在の局面情報。
+  int player_num_;                             // 自分のプレイヤ番号。
+  std::vector<MonteCarloTreeNode> children_{}; // 子節点(あり得る局面の集合)。
+  int play_cnt_{};                             // この節点を探索した回数。
+  int sum_score_{};                            // この局面を通るプレイアウトで得られた得点の総数。勝1点負0点制なら勝利数と一致する。
 
   /* 節点用。子節点を再帰的に掘り進め、勝利数を逆伝播。 */
   int searchChild(int whole_play_cnt) {

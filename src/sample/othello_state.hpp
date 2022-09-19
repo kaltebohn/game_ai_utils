@@ -13,11 +13,6 @@ class OthelloState {
   static constexpr int kBlackTurn{0};
   static constexpr int kWhiteTurn{1};
 
-  OthelloState()
-      : cur_turn_(OthelloState::kBlackTurn),
-        black_board_(0x00'00'00'08'10'00'00'00),
-        white_board_(0x00'00'00'10'08'00'00'00) {}
-
   /* 受け取った手を適用して得られる状態を返す。 */
   OthelloState next(const coord& action) const;
 
@@ -61,13 +56,13 @@ class OthelloState {
   }
 
  private:
-  /* マスの表現。 */
-  /* A1, B1, ..., H1, A2, ..., H8 の順。 */
+  /* マスの表現。A1, B1, ..., H1, A2, ..., H8 の順。 */
   static const std::array<bitboard, 64> kSquare;
-  bitboard black_board_;
-  bitboard white_board_;
-  int cur_turn_;
-  coord last_action_;
+
+  bitboard black_board_{0x00'00'00'08'10'00'00'00};
+  bitboard white_board_{0x00'00'00'10'08'00'00'00};
+  int cur_turn_{OthelloState::kBlackTurn};
+  coord last_action_{};
 
   /* 合法手か。 */
   bool isLegal(const bitboard put) const {
