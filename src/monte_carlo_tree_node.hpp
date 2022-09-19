@@ -97,8 +97,7 @@ class MonteCarloTreeNode {
   }
 
   /* 子節点中で最も評価値の高いものを返す。 */
-  MonteCarloTreeNode<GameState, GameAction>& selectChildToSearch(
-      int whole_play_cnt) {
+  MonteCarloTreeNode<GameState, GameAction>& selectChildToSearch(int whole_play_cnt) {
     if (this->children_.size() <= 0) {
       std::cerr << "子節点がありません。" << std::endl;
       std::terminate();
@@ -106,7 +105,7 @@ class MonteCarloTreeNode {
 
     return *std::max_element(
         this->children_.begin(), this->children_.end(),
-        [=](const MonteCarloTreeNode& a, const MonteCarloTreeNode& b) {
+        [whole_play_cnt](const MonteCarloTreeNode& a, const MonteCarloTreeNode& b) {
           return a.evaluate(whole_play_cnt) < b.evaluate(whole_play_cnt);
         });
   }
@@ -120,7 +119,7 @@ class MonteCarloTreeNode {
 
     return *std::max_element(
         this->children_.begin(), this->children_.end(),
-        [=](const MonteCarloTreeNode& a, const MonteCarloTreeNode& b) {
+        [](const MonteCarloTreeNode& a, const MonteCarloTreeNode& b) {
           return a.meanScore() < b.meanScore();
         });
   }
@@ -165,7 +164,7 @@ class MonteCarloTreeNode {
   }
 
   /* 与えられた局面に対してランダムな着手を選択。 */
-  static const GameAction randomAction(GameState first_state) {
+  static const GameAction randomAction(GameState& first_state) {
     std::random_device seed_gen;
     std::default_random_engine rand_engine(seed_gen());
 
