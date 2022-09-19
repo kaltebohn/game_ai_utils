@@ -20,7 +20,7 @@ class OthelloState {
   }
 
   /* 受け取った手を適用して得られる状態を返す。 */
-  OthelloState next(const coord& action);
+  OthelloState next(const coord& action) const;
 
   /* 合法手の全体を返す。 */
   std::vector<coord> legalActions() const;
@@ -35,7 +35,7 @@ class OthelloState {
 
   /* 座標をbit表現に変換。 */
   static bitboard coord2Bit(const coord xy) {
-    return kSquare.at(xy.first + 8 * xy.second);
+    return OthelloState::kSquare.at(xy.first + 8 * xy.second);
   }
 
   /* 指定されたプレイヤ番号の現時点での得点を返す。 */
@@ -50,7 +50,7 @@ class OthelloState {
   /* 盤面を出力。 */
   void print() const;
 
-  int countDisksOf(int player_num) {
+  int countDisksOf(int player_num) const {
     switch (player_num)
     {
     case OthelloState::kBlackTurn:
