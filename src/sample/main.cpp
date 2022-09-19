@@ -24,9 +24,9 @@ void pvp() {
     std::cin >> action.first >> action.second;
 
     while (!std::cin.good() ||
-           action.first < 0 || action.first >= 8 ||
-           action.second < 0 || action.second >= 8 ||
-           !state.isLegal(action)) {
+        action.first < 0 || action.first >= 8 ||
+        action.second < 0 || action.second >= 8 ||
+        !state.isLegal(action)) {
       std::cout << "合法手ではありません。もう一度入力してください。" << std::endl;
       std::cin.clear();
       std::cin.ignore(256, '\n');
@@ -78,7 +78,7 @@ void monte_carlo() {
     OthelloState::coord action{};
     if (state.getCurTurn() != player_color) {
       int opponent_color = (player_color == OthelloState::kBlackTurn) ? OthelloState::kWhiteTurn : OthelloState::kBlackTurn;
-      MonteCarloTreeNode<OthelloState, OthelloState::coord> node = MonteCarloTreeNode<OthelloState, OthelloState::coord>(state, opponent_color);
+      MonteCarloTreeNode<OthelloState, OthelloState::coord> node{MonteCarloTreeNode<OthelloState, OthelloState::coord>(state, opponent_color)};
       action = node.search();
     } else {
       std::cout << std::endl;

@@ -12,6 +12,7 @@
 template <class GameState, typename GameAction>
 class MonteCarloTreeNode {
  public:
+  /* このクラスをvectorで扱うために必要。 */
   MonteCarloTreeNode() : current_state_(), player_num_() {}
 
   MonteCarloTreeNode(const GameState& state, const int player_num)
