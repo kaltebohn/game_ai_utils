@@ -12,7 +12,7 @@
 template <class GameState, typename GameAction>
 class MonteCarloTreeNode {
  public:
-  MonteCarloTreeNode(): current_state_({}), player_num_() {}
+  MonteCarloTreeNode() : current_state_({}), player_num_() {}
 
   MonteCarloTreeNode(const GameState& state, const int player_num)
       : current_state_(state), player_num_(player_num) {}
@@ -54,16 +54,16 @@ class MonteCarloTreeNode {
   }
 
  private:
-  static constexpr bool kIsDebug = false;      // デバッグ出力あり？
-  static constexpr int kPlayoutLimit = 1000;   // プレイアウト回数の制限。
-  static constexpr int kExpandThreshold = 3;   // 何回探索されたら節点を展開するか。
+  static constexpr bool kIsDebug = false;    // デバッグ出力あり？
+  static constexpr int kPlayoutLimit = 1000; // プレイアウト回数の制限。
+  static constexpr int kExpandThreshold = 3; // 何回探索されたら節点を展開するか。
   static constexpr double kEvaluationMax =
-      std::numeric_limits<double>::infinity(); // 評価値の上限。
-  GameState current_state_;                    // 現在の局面情報。
-  std::vector<MonteCarloTreeNode> children_;   // 子節点(あり得る局面の集合)。
-  int player_num_;                             // 自分のプレイヤ番号。
-  int play_cnt_;                               // この節点を探索した回数。
-  int sum_score_;                              // この局面を通るプレイアウトで得られた得点の総数。勝1点負0点制なら勝利数と一致する。
+      std::numeric_limits<double>::infinity();  // 評価値の上限。
+  GameState current_state_;                     // 現在の局面情報。
+  std::vector<MonteCarloTreeNode> children_;  // 子節点(あり得る局面の集合)。
+  int player_num_;                            // 自分のプレイヤ番号。
+  int play_cnt_;   // この節点を探索した回数。
+  int sum_score_;  // この局面を通るプレイアウトで得られた得点の総数。勝1点負0点制なら勝利数と一致する。
 
   /* 節点用。子節点を再帰的に掘り進め、勝利数を逆伝播。 */
   int searchChild(int whole_play_cnt) {
@@ -76,13 +76,15 @@ class MonteCarloTreeNode {
     }
 
     /* 子供がおらず、十分この節点を探索した場合は、展開する。 */
-    if (this->children_.size() <= 0 && this->play_cnt_ > MonteCarloTreeNode::kExpandThreshold) {
+    if (this->children_.size() <= 0 &&
+        this->play_cnt_ > MonteCarloTreeNode::kExpandThreshold) {
       this->expand();
     }
 
     /* 子供がいる場合は、選択して掘り進める。 */
     if (this->children_.size() > 0) {
-      MonteCarloTreeNode<GameState, GameAction>& child = this->selectChildToSearch(whole_play_cnt);
+      MonteCarloTreeNode<GameState, GameAction>& child =
+          this->selectChildToSearch(whole_play_cnt);
       int result = child.searchChild(whole_play_cnt);
       this->sum_score_ += result;
       return result;

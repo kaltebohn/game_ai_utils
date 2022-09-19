@@ -13,11 +13,10 @@ class OthelloState {
   static constexpr int kBlackTurn = 0;
   static constexpr int kWhiteTurn = 1;
 
-  OthelloState() {
-    this->cur_turn_ = OthelloState::kBlackTurn;
-    this->black_board_ = 0x00'00'00'08'10'00'00'00;
-    this->white_board_ = 0x00'00'00'10'08'00'00'00;
-  }
+  OthelloState()
+      : cur_turn_(OthelloState::kBlackTurn),
+        black_board_(0x00'00'00'08'10'00'00'00),
+        white_board_(0x00'00'00'10'08'00'00'00) {}
 
   /* 受け取った手を適用して得られる状態を返す。 */
   OthelloState next(const coord& action) const;
@@ -51,17 +50,15 @@ class OthelloState {
   void print() const;
 
   int countDisksOf(int player_num) const {
-    switch (player_num)
-    {
-    case OthelloState::kBlackTurn:
-      return this->count(this->black_board_);
-    case OthelloState::kWhiteTurn:
-      return this->count(this->white_board_);
-    default:
-      return 0;
+    switch (player_num) {
+      case OthelloState::kBlackTurn:
+        return this->count(this->black_board_);
+      case OthelloState::kWhiteTurn:
+        return this->count(this->white_board_);
+      default:
+        return 0;
     }
   }
-
 
  private:
   /* マスの表現。 */
@@ -93,17 +90,17 @@ class OthelloState {
   static int count(const bitboard src) {
     bitboard tmp = src;
     tmp = (tmp & 0x5555555555555555) +
-          (tmp >> 1 & 0x5555555555555555);  // 2bits区切でビット数を数える。
+          (tmp >> 1 & 0x5555555555555555);   // 2bits区切でビット数を数える。
     tmp = (tmp & 0x3333333333333333) +
-          (tmp >> 2 & 0x3333333333333333);  // 4bits区切。
+          (tmp >> 2 & 0x3333333333333333);   // 4bits区切。
     tmp = (tmp & 0x0f0f0f0f0f0f0f0f) +
-          (tmp >> 4 & 0x0f0f0f0f0f0f0f0f);  // 8bits。
+          (tmp >> 4 & 0x0f0f0f0f0f0f0f0f);   // 8bits。
     tmp = (tmp & 0x00ff00ff00ff00ff) +
-          (tmp >> 8 & 0x00ff00ff00ff00ff);  // 16bits。
+          (tmp >> 8 & 0x00ff00ff00ff00ff);   // 16bits。
     tmp = (tmp & 0x0000ffff0000ffff) +
           (tmp >> 16 & 0x0000ffff0000ffff);  // 32bits。
     return (tmp & 0x00000000ffffffff) +
-           (tmp >> 32 & 0x00000000ffffffff);  // 64bits。
+           (tmp >> 32 & 0x00000000ffffffff); // 64bits。
   }
 };
 
