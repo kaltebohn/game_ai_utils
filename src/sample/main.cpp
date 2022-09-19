@@ -23,8 +23,10 @@ void pvp() {
     std::cout << ">> ";
     std::cin >> action.first >> action.second;
 
-    while (!std::cin.good() || action.first < 0 || action.first >= 8 ||
-           action.second < 0 || action.second >= 8 || !state.isLegal(action)) {
+    while (!std::cin.good() ||
+           action.first < 0 || action.first >= 8 ||
+           action.second < 0 || action.second >= 8 ||
+           !state.isLegal(action)) {
       std::cout << "合法手ではありません。もう一度入力してください。" << std::endl;
       std::cin.clear();
       std::cin.ignore(256, '\n');
@@ -59,8 +61,7 @@ void monte_carlo() {
     std::cout << ">> ";
     std::cin >> tmp;
   }
-  player_color = (tmp == 0)
-                 ? OthelloState::kBlackTurn : OthelloState::kWhiteTurn;
+  player_color = (tmp == 0) ? OthelloState::kBlackTurn : OthelloState::kWhiteTurn;
 
   while (!state.isFinished()) {
     std::cout << "********************" << std::endl;
@@ -69,19 +70,15 @@ void monte_carlo() {
     } else {
       std::cout << "白の手番" << std::endl;
     }
-    std::cout << " 黒: "
-              << state.countDisksOf(OthelloState::kBlackTurn) << std::endl;
-    std::cout << " 白: "
-              << state.countDisksOf(OthelloState::kWhiteTurn) << std::endl;
+    std::cout << " 黒: " << state.countDisksOf(OthelloState::kBlackTurn) << std::endl;
+    std::cout << " 白: " << state.countDisksOf(OthelloState::kWhiteTurn) << std::endl;
     std::cout << "********************" << std::endl;
 
     state.print();
     OthelloState::coord action{};
     if (state.getCurTurn() != player_color) {
-      int opponent_color = (player_color == OthelloState::kBlackTurn)
-                           ? OthelloState::kWhiteTurn : OthelloState::kBlackTurn;
-      MonteCarloTreeNode<OthelloState, OthelloState::coord> node =
-          MonteCarloTreeNode<OthelloState, OthelloState::coord>(state, opponent_color);
+      int opponent_color = (player_color == OthelloState::kBlackTurn) ? OthelloState::kWhiteTurn : OthelloState::kBlackTurn;
+      MonteCarloTreeNode<OthelloState, OthelloState::coord> node = MonteCarloTreeNode<OthelloState, OthelloState::coord>(state, opponent_color);
       action = node.search();
     } else {
       std::cout << std::endl;
@@ -90,8 +87,10 @@ void monte_carlo() {
       std::cout << "着手を入力してください。" << std::endl;
       std::cin >> action.first >> action.second;
 
-      while (!std::cin.good() || action.first < 0 || action.first >= 8 ||
-             action.second < 0 || action.second >= 8 || !state.isLegal(action)) {
+      while (!std::cin.good() ||
+             action.first < 0 || action.first >= 8 ||
+             action.second < 0 || action.second >= 8 ||
+             !state.isLegal(action)) {
         std::cout << "合法手ではありません。もう一度入力してください。" << std::endl;
         std::cin.clear();
         std::cin.ignore(256, '\n');

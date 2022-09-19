@@ -79,8 +79,7 @@ OthelloState OthelloState::next(const coord& action) const {
   }
 
   if (result.isPass()) {
-    result.cur_turn_ = (result.cur_turn_ == OthelloState::kBlackTurn)
-                       ? OthelloState::kWhiteTurn : OthelloState::kBlackTurn;
+    result.cur_turn_ = (result.cur_turn_ == OthelloState::kBlackTurn) ? OthelloState::kWhiteTurn : OthelloState::kBlackTurn;
   }
 
   return result;
@@ -106,8 +105,7 @@ bool OthelloState::isFinished() const {
 
   /* 次手番の合法手全体。 */
   OthelloState next_state{OthelloState(*this)};
-  next_state.cur_turn_ =
-      (this->cur_turn_ == OthelloState::kBlackTurn) ? kWhiteTurn : kBlackTurn;
+  next_state.cur_turn_ = (this->cur_turn_ == OthelloState::kBlackTurn) ? kWhiteTurn : kBlackTurn;
   const bitboard opponent_legal_board{next_state.legalBoard()};
 
   /* 現在手番だけで合法手がなければ、パス。次手番でも合法手がなければ、終局。 */
@@ -125,13 +123,9 @@ int OthelloState::getScore(const int player_num) const {
   }
 
   if (player_num == OthelloState::kBlackTurn) {
-    return (OthelloState::count(this->black_board_) >
-            OthelloState::count(this->white_board_))
-            ? 1 : 0;
+    return (OthelloState::count(this->black_board_) > OthelloState::count(this->white_board_)) ? 1 : 0;
   } else {
-    return (OthelloState::count(this->black_board_) <
-            OthelloState::count(this->white_board_))
-            ? 1 : 0;
+    return (OthelloState::count(this->black_board_) < OthelloState::count(this->white_board_)) ? 1 : 0;
   }
 }
 
@@ -187,12 +181,9 @@ OthelloState::bitboard OthelloState::legalBoard() const {
 
   /* 左右方向・上下方向・斜め方向にそれぞれ挟めるマス全体。端は挟めないので積をとって除いている。
    */
-  const bitboard horizontal_sandwichable_squares =
-      opponent_board & 0x7e7e7e7e7e7e7e7e;
-  const bitboard vertical_sandwichable_squares =
-      opponent_board & 0x00FFFFFFFFFFFF00;
-  const bitboard diagonal_sandwichable_squares =
-      opponent_board & 0x007e7e7e7e7e7e00;
+  const bitboard horizontal_sandwichable_squares = opponent_board & 0x7e7e7e7e7e7e7e7e;
+  const bitboard vertical_sandwichable_squares = opponent_board & 0x00FFFFFFFFFFFF00;
+  const bitboard diagonal_sandwichable_squares = opponent_board & 0x007e7e7e7e7e7e00;
 
   /* 空のマス全体。 */
   const bitboard blank_squares = ~(my_board | opponent_board);
@@ -263,8 +254,7 @@ OthelloState::bitboard OthelloState::legalBoard() const {
   return result;
 }
 
-OthelloState::bitboard OthelloState::nextSquare(const bitboard square,
-                                                const int direction) const {
+OthelloState::bitboard OthelloState::nextSquare(const bitboard square, const int direction) const {
   /* 8方向について、1つ先に移動できればその場所に1が立ったbit表現を返す。 */
   switch (direction) {
     case 0:  // 上。下には移動できないので、一番下はbitが立っていない。
@@ -294,8 +284,7 @@ bool OthelloState::isPass() const {
 
   /* 次手番の合法手全体。 */
   OthelloState next_state{OthelloState(*this)};
-  next_state.cur_turn_ =
-      (this->cur_turn_ == OthelloState::kBlackTurn) ? kWhiteTurn : kBlackTurn;
+  next_state.cur_turn_ = (this->cur_turn_ == OthelloState::kBlackTurn) ? kWhiteTurn : kBlackTurn;
   const bitboard opponent_legal_board{next_state.legalBoard()};
 
   /* 現在手番だけで合法手がなければ、パス。次手番でも合法手がなければ、終局。 */

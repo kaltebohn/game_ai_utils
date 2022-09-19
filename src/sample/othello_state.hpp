@@ -84,18 +84,12 @@ class OthelloState {
   /* bitboardの1を数える。 */
   static int count(const bitboard src) {
     bitboard tmp{src};
-    tmp = (tmp & 0x5555555555555555) +
-          (tmp >> 1 & 0x5555555555555555);   // 2bits区切でビット数を数える。
-    tmp = (tmp & 0x3333333333333333) +
-          (tmp >> 2 & 0x3333333333333333);   // 4bits区切。
-    tmp = (tmp & 0x0f0f0f0f0f0f0f0f) +
-          (tmp >> 4 & 0x0f0f0f0f0f0f0f0f);   // 8bits。
-    tmp = (tmp & 0x00ff00ff00ff00ff) +
-          (tmp >> 8 & 0x00ff00ff00ff00ff);   // 16bits。
-    tmp = (tmp & 0x0000ffff0000ffff) +
-          (tmp >> 16 & 0x0000ffff0000ffff);  // 32bits。
-    return (tmp & 0x00000000ffffffff) +
-           (tmp >> 32 & 0x00000000ffffffff); // 64bits。
+    tmp = (tmp & 0x5555555555555555) + (tmp >> 1 & 0x5555555555555555);   // 2bits区切でビット数を数える。
+    tmp = (tmp & 0x3333333333333333) + (tmp >> 2 & 0x3333333333333333);   // 4bits区切。
+    tmp = (tmp & 0x0f0f0f0f0f0f0f0f) + (tmp >> 4 & 0x0f0f0f0f0f0f0f0f);   // 8bits。
+    tmp = (tmp & 0x00ff00ff00ff00ff) + (tmp >> 8 & 0x00ff00ff00ff00ff);   // 16bits。
+    tmp = (tmp & 0x0000ffff0000ffff) + (tmp >> 16 & 0x0000ffff0000ffff);  // 32bits。
+    return (tmp & 0x00000000ffffffff) + (tmp >> 32 & 0x00000000ffffffff); // 64bits。
   }
 };
 

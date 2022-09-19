@@ -83,8 +83,7 @@ class MonteCarloTreeNode {
 
     /* 子供がいる場合は、選択して掘り進める。 */
     if (this->children_.size() > 0) {
-      MonteCarloTreeNode<GameState, GameAction>& child =
-          this->selectChildToSearch(whole_play_cnt);
+      MonteCarloTreeNode<GameState, GameAction>& child = this->selectChildToSearch(whole_play_cnt);
       int result{child.searchChild(whole_play_cnt)};
       this->sum_score_ += result;
       return result;
@@ -130,11 +129,10 @@ class MonteCarloTreeNode {
     std::vector<GameAction> actions{this->current_state_.legalActions()};
     this->children_.resize(actions.size());
     std::transform(actions.begin(), actions.end(), this->children_.begin(),
-                   [&](auto action) {
-                     GameState state =
-                         GameState(this->current_state_).next(action);
-                     return MonteCarloTreeNode(state, this->player_num_);
-                   });
+        [&](auto action) {
+          GameState state = GameState(this->current_state_).next(action);
+          return MonteCarloTreeNode(state, this->player_num_);
+        });
   }
 
   /* プレイアウトを実施し、結果を返す。 */
@@ -150,8 +148,7 @@ class MonteCarloTreeNode {
 
   /* なんらかの方法で現在局面の評価値を計算して返す。 */
   double evaluate(int whole_play_cnt) const {
-    return MonteCarloTreeNode::ucb1(whole_play_cnt, this->play_cnt_,
-                                    this->sum_score_);
+    return MonteCarloTreeNode::ucb1(whole_play_cnt, this->play_cnt_, this->sum_score_);
   }
 
   /* 現在局面の平均得点を返す。勝ち点1負け点0のゲームなら勝率。 */
@@ -163,12 +160,7 @@ class MonteCarloTreeNode {
   /* 得点制ゲームに対応するため、勝ち数の代わりに得点を用いている。オセロや将棋では勝ち1、負け0にすればよい。
    */
   static double ucb1(int whole_play_cnt, int play_cnt, int score) {
-    if (play_cnt <= 0) {
-      return kEvaluationMax;
-    } else {
-      return (double)score / play_cnt +
-             std::sqrt(2.0 * std::log2(whole_play_cnt) / play_cnt);
-    }
+    return (play_cnt <= 0) ? kEvaluationMax : (double)score / play_cnt + std::sqrt(2.0 * std::log2(whole_play_cnt) / play_cnt);
   }
 
   /* 与えられた局面に対してランダムな着手を選択。 */
