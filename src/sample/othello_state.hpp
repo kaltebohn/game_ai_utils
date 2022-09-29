@@ -39,7 +39,7 @@ class OthelloState {
   coord getLastAction() const { return this->last_action_; }
 
   /* 現在どちらの手番か。 */
-  int getCurTurn() const { return this->cur_turn_; }
+  int getPlayerNum() const { return this->cur_turn_; }
 
   /* 盤面を出力。 */
   void print() const;
