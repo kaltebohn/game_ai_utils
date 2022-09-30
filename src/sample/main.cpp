@@ -7,7 +7,7 @@
 void pvp() {
   OthelloState state{};
   while (!state.isFinished()) {
-    if (state.getCurTurn() == OthelloState::kBlackTurn) {
+    if (state.getMyPlayerNum() == OthelloState::kBlackTurn) {
       std::cout << "黒の手番" << std::endl;
     } else {
       std::cout << "白の手番" << std::endl;
@@ -65,7 +65,7 @@ void monte_carlo() {
 
   while (!state.isFinished()) {
     std::cout << "********************" << std::endl;
-    if (state.getCurTurn() == OthelloState::kBlackTurn) {
+    if (state.getMyPlayerNum() == OthelloState::kBlackTurn) {
       std::cout << "黒の手番" << std::endl;
     } else {
       std::cout << "白の手番" << std::endl;
@@ -76,7 +76,7 @@ void monte_carlo() {
 
     state.print();
     OthelloState::coord action{};
-    if (state.getCurTurn() != player_color) {
+    if (state.getMyPlayerNum() != player_color) {
       int opponent_color{player_color == OthelloState::kBlackTurn ? OthelloState::kWhiteTurn : OthelloState::kBlackTurn};
       MonteCarloTreeNode<OthelloState, OthelloState::coord, 2> node{MonteCarloTreeNode<OthelloState, OthelloState::coord, 2>(state, opponent_color)};
       action = node.search();

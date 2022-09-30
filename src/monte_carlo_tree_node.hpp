@@ -44,8 +44,12 @@ class MonteCarloTreeNode {
         std::cout << "プレイヤ番号: " << player_num_ << std::endl;
         std::cout << "総プレイアウト回数: " << whole_play_cnt << std::endl;
         std::cout << "節点の通過回数: " << child.play_cnt_ << std::endl;
-        std::cout << "得点和: " << child.sum_score_ << std::endl;
-        std::cout << "勝率: " << child.meanScore() << std::endl;
+        std::cout << "得点和: ";
+        for (const int s : sum_scores_) {
+          std::cout << s << " ";
+        }
+        std::cout << std::endl;
+        std::cout << "勝率: " << child.meanScore(player_num_) << std::endl;
         std::cout << "********************" << std::endl;
         child.current_state_.print();
         std::cout << "********************" << std::endl;
@@ -66,7 +70,7 @@ class MonteCarloTreeNode {
   int player_num_;                       // 自分のプレイヤ番号。
   std::vector<MonteCarloTreeNode> children_{}; // 子節点(あり得る局面の集合)。
   int play_cnt_{};                             // この節点を探索した回数。
-  int sum_score_{};                            // この局面を通るプレイアウトで得られた得点の総数。勝1点負0点制なら勝利数と一致する。
+  std::array<int, kNumberOfPlayers> sum_scores_{}; // この局面を通るプレイアウトで得られた各プレイヤの総得点。勝1点負0点制なら勝利数と一致する。
   std::function<GameAction(GameState&)> selectForPlayout_{randomAction}; // ロールアウトポリシー。
 
   /* 節点用。子節点を再帰的に掘り進め、各プレイヤの得点を逆伝播。 */
@@ -78,8 +82,8 @@ class MonteCarloTreeNode {
       std::array<int, kNumberOfPlayers> result{};
       for (int i = 0; i < kNumberOfPlayers; i++) {
         result.at(i) = this->current_state_.getScore(i);
+        sum_scores_.at(i) += result.at(i);
       }
-      this->sum_score_ += result.at(this->player_num_);
       return result;
     }
 
@@ -93,13 +97,17 @@ class MonteCarloTreeNode {
     if (this->children_.size() > 0) {
       MonteCarloTreeNode<GameState, GameAction, kNumberOfPlayers>& child{this->selectChildToSearch(whole_play_cnt)};
       std::array<int, kNumberOfPlayers> result{child.searchChild(whole_play_cnt)};
-      this->sum_score_ += result.at(this->player_num_);
+      for (int i = 0; i < kNumberOfPlayers; i++) {
+        sum_scores_.at(i) += result.at(i);
+      }
       return result;
     }
 
     /* 子供がいない場合は、プレイアウトの結果を返す。 */
     std::array<int, kNumberOfPlayers> result{this->playout()};
-    this->sum_score_ += result.at(this->player_num_);
+    for (int i = 0; i < kNumberOfPlayers; i++) {
+      sum_scores_.at(i) += result.at(i);
+    }
     return result;
   }
 
@@ -112,8 +120,8 @@ class MonteCarloTreeNode {
 
     return *std::max_element(
         this->children_.begin(), this->children_.end(),
-        [whole_play_cnt](const MonteCarloTreeNode& a, const MonteCarloTreeNode& b) {
-          return a.evaluate(whole_play_cnt) < b.evaluate(whole_play_cnt);
+        [whole_play_cnt, this](const MonteCarloTreeNode& a, const MonteCarloTreeNode& b) {
+          return a.evaluate(whole_play_cnt, player_num_) < b.evaluate(whole_play_cnt, player_num_);
         });
   }
 
@@ -126,8 +134,8 @@ class MonteCarloTreeNode {
 
     return *std::max_element(
         this->children_.begin(), this->children_.end(),
-        [](const MonteCarloTreeNode& a, const MonteCarloTreeNode& b) {
-          return a.meanScore() < b.meanScore();
+        [this](const MonteCarloTreeNode& a, const MonteCarloTreeNode& b) {
+          return a.meanScore(player_num_) < b.meanScore(player_num_);
         });
   }
 
@@ -158,14 +166,14 @@ class MonteCarloTreeNode {
     return result;
   }
 
-  /* なんらかの方法で現在局面の評価値を計算して返す。 */
-  double evaluate(int whole_play_cnt) const {
-    return MonteCarloTreeNode::ucb1(whole_play_cnt, this->play_cnt_, this->sum_score_);
+  /* なんらかの方法でplayer_num目線での現在局面の評価値を計算して返す。 */
+  double evaluate(int whole_play_cnt, int player_num) const {
+    return MonteCarloTreeNode::ucb1(whole_play_cnt, this->play_cnt_, this->sum_scores_.at(player_num));
   }
 
-  /* 現在局面の平均得点を返す。勝ち点1負け点0のゲームなら勝率。 */
-  double meanScore() const {
-    return (double)this->sum_score_ / this->play_cnt_;
+  /* player_num目線での現在局面の平均得点を返す。勝ち点1負け点0のゲームなら勝率。 */
+  double meanScore(int player_num) const {
+    return (double)this->sum_scores_.at(player_num) / this->play_cnt_;
   }
 
   /* ucb1値を返す。 */
