@@ -1,3 +1,4 @@
+#include <random>
 #include <string.h>
 #include <iostream>
 
@@ -20,6 +21,8 @@ void pvp() {
     std::cout << "石を置く場所を指定してください。" << std::endl;
     OthelloState::coord action{};
     std::cout << "着手を入力してください。" << std::endl;
+    std::cout << "このとき、縦方向はA, ..., Hを0, ..., 7に、" << std::endl;
+    std::cout << "横方向は1, ..., 8を0, ..., 7に置き換えて入力してください。" << std::endl;
     std::cout << ">> ";
     std::cin >> action.first >> action.second;
 
@@ -47,7 +50,11 @@ void pvp() {
 }
 
 void monte_carlo() {
+  /* ゲームの状態。 */
   OthelloState state{};
+
+  /* 乱数のシード生成器。 */
+  std::random_device seed_gen;
 
   int player_color;
   int tmp;
@@ -78,13 +85,15 @@ void monte_carlo() {
     OthelloState::coord action{};
     if (state.getMyPlayerNum() != player_color) {
       int opponent_color{player_color == OthelloState::kBlackTurn ? OthelloState::kWhiteTurn : OthelloState::kBlackTurn};
-      MonteCarloTreeNode<OthelloState, OthelloState::coord, 2> node{MonteCarloTreeNode<OthelloState, OthelloState::coord, 2>(state, opponent_color)};
+      MonteCarloTreeNode<OthelloState, OthelloState::coord, 2> node{MonteCarloTreeNode<OthelloState, OthelloState::coord, 2>(state, opponent_color, seed_gen())};
       action = node.search();
     } else {
       std::cout << std::endl;
 
       std::cout << "石を置く場所を指定してください。" << std::endl;
       std::cout << "着手を入力してください。" << std::endl;
+      std::cout << "このとき、縦方向はA, ..., Hを0, ..., 7に、" << std::endl;
+      std::cout << "横方向は1, ..., 8を0, ..., 7に置き換えて入力してください。" << std::endl;
       std::cin >> action.first >> action.second;
 
       while (!std::cin.good() ||

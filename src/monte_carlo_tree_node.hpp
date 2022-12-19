@@ -8,6 +8,8 @@
 #include <random>
 #include <vector>
 
+#include "xorshift64.hpp"
+
 /* GameState: GameStateクラスを実装した型。 */
 /* GameAction: ゲームの着手を表現する型。 */
 template <class GameState, typename GameAction, int kNumberOfPlayers>
@@ -16,8 +18,8 @@ class MonteCarloTreeNode {
   /* このクラスをvectorで扱うために必要。 */
   MonteCarloTreeNode() : current_state_(), player_num_() {}
 
-  MonteCarloTreeNode(const GameState& state, const int player_num, std::function<GameAction(GameState&)> selectForPlayout = randomAction, const float epsilon = 0.0)
-      : current_state_(state), player_num_(player_num), selectForPlayout_(selectForPlayout), kEpsilon_(epsilon) {}
+  MonteCarloTreeNode(const GameState& state, const int player_num, const unsigned int random_seed = 0, const float epsilon = 0.0, std::function<GameAction(const GameState&, XorShift64&)> selectForPlayout = randomAction)
+      : current_state_(state), player_num_(player_num), random_seed_(random_seed), random_engine_(random_seed_), selectForPlayout_(selectForPlayout), epsilon_(epsilon) {}
 
   /* 根用。クラスの外側から探索を指示されて最善手を返す。 */
   GameAction search() {
@@ -29,6 +31,11 @@ class MonteCarloTreeNode {
     if (this->children_.size() <= 0) {
       std::cerr << "子節点がありません。" << std::endl;
       std::terminate();
+    }
+
+    /* 手が1つしかないなら、それを出す。 */
+    if (this->children_.size() == 1) {
+      return this->children_.at(0).current_state_.getLastAction();
     }
 
     /* 探索。とりあえず、時間ではなく回数で探索に制限をかける。 */
@@ -70,20 +77,24 @@ class MonteCarloTreeNode {
   int player_num_;                       // 自分のプレイヤ番号。
   std::vector<MonteCarloTreeNode> children_{}; // 子節点(あり得る局面の集合)。
   int play_cnt_{};                             // この節点を探索した回数。
-  std::array<int, kNumberOfPlayers> sum_scores_{}; // この局面を通るプレイアウトで得られた各プレイヤの総得点。勝1点負0点制なら勝利数と一致する。
-  std::function<GameAction(GameState&)> selectForPlayout_{randomAction}; // ロールアウトポリシー。
-  float kEpsilon_{};
+  std::array<double, kNumberOfPlayers> sum_scores_{}; // この局面を通るプレイアウトで得られた各プレイヤの総得点。勝1点負0点制なら勝利数と一致する。
+  std::array<double, kNumberOfPlayers> sum_scores_squared_{}; // この局面を通るプレイアウトで得られた各プレイヤの得点の二乗値の総和。
+  unsigned int random_seed_;
+  XorShift64 random_engine_;
+  std::function<GameAction(const GameState&, XorShift64&)> selectForPlayout_; // ロールアウトポリシー。
+  float epsilon_{};
 
   /* 節点用。子節点を再帰的に掘り進め、各プレイヤの得点を逆伝播。 */
-  std::array<int, kNumberOfPlayers> searchChild(int whole_play_cnt) {
-    this->play_cnt_++;
+  std::array<double, kNumberOfPlayers> searchChild(int whole_play_cnt) {
+    play_cnt_++;
 
     /* 既に勝敗がついていたら、結果を返す。 */
     if (this->current_state_.isFinished()) {
-      std::array<int, kNumberOfPlayers> result{};
+      std::array<double, kNumberOfPlayers> result{};
       for (int i = 0; i < kNumberOfPlayers; i++) {
         result.at(i) = this->current_state_.getScore(i);
         sum_scores_.at(i) += result.at(i);
+        sum_scores_squared_.at(i) += result.at(i) * result.at(i);
       }
       return result;
     }
@@ -97,17 +108,19 @@ class MonteCarloTreeNode {
     /* 子供がいる場合は、選択して掘り進める。 */
     if (this->children_.size() > 0) {
       MonteCarloTreeNode<GameState, GameAction, kNumberOfPlayers>& child{this->selectChildToSearch(whole_play_cnt)};
-      std::array<int, kNumberOfPlayers> result{child.searchChild(whole_play_cnt)};
+      std::array<double, kNumberOfPlayers> result{child.searchChild(whole_play_cnt)};
       for (int i = 0; i < kNumberOfPlayers; i++) {
         sum_scores_.at(i) += result.at(i);
+        sum_scores_squared_.at(i) += result.at(i) * result.at(i);
       }
       return result;
     }
 
     /* 子供がいない場合は、プレイアウトの結果を返す。 */
-    std::array<int, kNumberOfPlayers> result{this->playout()};
+    std::array<double, kNumberOfPlayers> result{this->playout()};
     for (int i = 0; i < kNumberOfPlayers; i++) {
       sum_scores_.at(i) += result.at(i);
+      sum_scores_squared_.at(i) += result.at(i) * result.at(i);
     }
     return result;
   }
@@ -147,19 +160,20 @@ class MonteCarloTreeNode {
     std::transform(actions.begin(), actions.end(), this->children_.begin(),
         [&](auto action) {
           GameState state{GameState(this->current_state_).next(action)};
-          return MonteCarloTreeNode(state, state.getMyPlayerNum());
+
+          return MonteCarloTreeNode(state, state.getMyPlayerNum(), random_seed_, epsilon_, selectForPlayout_);
         });
   }
 
   /* プレイアウトを実施し、結果を返す。 */
-  std::array<int, kNumberOfPlayers> playout() {
+  std::array<double, kNumberOfPlayers> playout() {
     GameState state{this->current_state_};
 
     while (!state.isFinished()) {
-      state = state.next(selectForPlayout_(state));
+      state = state.next(epsilonGreedyAction(state));
     }
 
-    std::array<int, kNumberOfPlayers> result{};
+    std::array<double, kNumberOfPlayers> result{};
     for (int i = 0; i < kNumberOfPlayers; i++) {
       result.at(i) = state.getScore(i);
     }
@@ -169,7 +183,8 @@ class MonteCarloTreeNode {
 
   /* なんらかの方法でplayer_num目線での現在局面の評価値を計算して返す。 */
   double evaluate(int whole_play_cnt, int player_num) const {
-    return MonteCarloTreeNode::ucb1(whole_play_cnt, this->play_cnt_, this->sum_scores_.at(player_num));
+    // return MonteCarloTreeNode::ucb1(whole_play_cnt, this->play_cnt_, this->sum_scores_.at(player_num));
+    return MonteCarloTreeNode::ucb1Tuned(whole_play_cnt, this->play_cnt_, this->sum_scores_.at(player_num), this->sum_scores_squared_.at(player_num));
   }
 
   /* player_num目線での現在局面の平均得点を返す。勝ち点1負け点0のゲームなら勝率。 */
@@ -178,33 +193,41 @@ class MonteCarloTreeNode {
   }
 
   /* ucb1値を返す。 */
-  /* 得点制ゲームに対応するため、勝ち数の代わりに得点を用いている。オセロや将棋では勝ち1、負け0にすればよい。
-   */
+  /* 得点制ゲームに対応するため、勝ち数の代わりに得点を用いている。オセロや将棋では勝ち1、負け0にすればよい。 */
   static double ucb1(int whole_play_cnt, int play_cnt, int score) {
     return (play_cnt <= 0) ? kEvaluationMax : (double)score / play_cnt + std::sqrt(2.0 * std::log2(whole_play_cnt) / play_cnt);
   }
 
+  /* ucb1-tuned値を返す。 */
+  static double ucb1Tuned(int whole_play_cnt, int play_cnt, int score, int score_squared) {
+    const double mean = (double)score / play_cnt;
+    const double variance = score_squared - mean * mean;
+    const double v = variance + std::sqrt(2.0 * std::log2(whole_play_cnt) / play_cnt);
+    return (play_cnt <= 0) ? kEvaluationMax : (double)score / play_cnt + std::sqrt(std::log2(whole_play_cnt) / play_cnt * std::min(0.25, v));
+  }
+
   /* 与えられた局面に対してランダムな着手を選択。 */
-  static const GameAction randomAction(GameState& first_state) {
-    std::random_device seed_gen;
-    std::default_random_engine rand_engine(seed_gen());
-
+  static GameAction randomAction(const GameState& first_state, XorShift64& random_engine) {
     std::vector<GameAction> actions{first_state.legalActions()};
-    std::uniform_int_distribution<int> dist(0, actions.size() - 1);
+    if (actions.size() == 1) { return actions.at(0); } // 一手しかないなら、それを出す。
 
-    return actions.at(dist(rand_engine));
+    // デバッグ。7bdc5ad時点で稀にエラーが発生するのでここで出力させる。
+    if (actions.size() == 0) {
+      std::cout << first_state;
+    }
+
+    std::uniform_int_distribution<int> dist(0, actions.size() - 1);
+    return actions.at(dist(random_engine));
   }
 
   /* 確率kEpsilonでランダムな手を打つ。 */
   const GameAction epsilonGreedyAction(GameState& first_state) {
-    std::random_device seed_gen;
-    std::default_random_engine rand_engine(seed_gen());
-    std::uniform_real_distribution<float> dist(0.0, 1.0);
+    std::bernoulli_distribution dist(epsilon_);
 
-    if (dist(rand_engine) <= kEpsilon_) {
-      return randomAction(first_state);
+    if (dist(random_engine_)) {
+      return randomAction(first_state, random_engine_);
     } else {
-      return selectForPlayout_(first_state);
+      return selectForPlayout_(first_state, random_engine_);
     }
   }
 };

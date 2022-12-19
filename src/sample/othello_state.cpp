@@ -129,10 +129,12 @@ int OthelloState::getScore(const int player_num) const {
   }
 }
 
-void OthelloState::print() const {
+std::string OthelloState::board2String() const {
   std::vector<int> squares{};
   bitboard tmp_black{this->black_board_};
   bitboard tmp_white{this->white_board_};
+
+  std::string result{};
 
   for (int i = 0; i < 8; i++) {
     for (int j = 0; j < 8; j++) {
@@ -148,24 +150,25 @@ void OthelloState::print() const {
     }
   }
 
-  std::cout << " 01234567" << std::endl;
+  result += " ABCDEFGH\n";
   for (int i = 7; i >= 0; i--) {
-    std::cout << (7 - i);
+    result += std::to_string(8 - i);
     for (int j = 7; j >= 0; j--) {
       switch (squares.at(8 * i + j)) {
         case 1:
-          std::cout << "X";
+          result += "X";
           break;
         case -1:
-          std::cout << "O";
+          result += "O";
           break;
         default:
-          std::cout << "-";
+          result += "-";
           break;
       }
     }
-    std::cout << std::endl;
+    result += "\n";
   }
+  return result;
 };
 
 OthelloState::bitboard OthelloState::legalBoard() const {
@@ -289,4 +292,17 @@ bool OthelloState::isPass() const {
 
   /* 現在手番だけで合法手がなければ、パス。次手番でも合法手がなければ、終局。 */
   return my_legal_board == (bitboard)0 && opponent_legal_board != (bitboard)0;
+}
+
+std::ostream& operator<<(std::ostream& os, const OthelloState& src) {
+  os << "## OthelloState" << std::endl;
+  os << "# Table" << std::endl;
+  os << src.board2String();
+  os << "# 現在のプレイヤ" << std::endl;
+    os << ((src.cur_turn_ == OthelloState::kBlackTurn) ?
+        "黒" : "白") << std::endl;
+  os << "# 最後の着手" << std::endl;
+  os << "(" << src.last_action_.first << ", "
+      << src.last_action_.second << ")" << std::endl;
+  return os;
 }

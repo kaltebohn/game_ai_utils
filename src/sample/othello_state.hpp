@@ -41,8 +41,11 @@ class OthelloState {
   /* 現在どちらの手番か。 */
   int getMyPlayerNum() const { return this->cur_turn_; }
 
+  /* 盤面を文字列に変換。 */
+  std::string board2String() const;
+
   /* 盤面を出力。 */
-  void print() const;
+  void print() const { std::cout << board2String(); }
 
   int countDisksOf(int player_num) const {
     switch (player_num) {
@@ -91,6 +94,9 @@ class OthelloState {
     tmp = (tmp & 0x0000ffff0000ffff) + (tmp >> 16 & 0x0000ffff0000ffff);  // 32bits。
     return (tmp & 0x00000000ffffffff) + (tmp >> 32 & 0x00000000ffffffff); // 64bits。
   }
+
+  /* デバッグ用。状態クラスの出力。 */
+  friend std::ostream& operator<<(std::ostream& os, const OthelloState& src);
 };
 
 #endif  // OTHELLO_STATE_HPP_
