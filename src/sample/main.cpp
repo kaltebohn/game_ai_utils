@@ -5,6 +5,26 @@
 #include "../monte_carlo_tree_node.hpp"
 #include "othello_state.hpp"
 
+OthelloState::coord getInputCoord(const OthelloState& state) {
+  std::cout << "石を置く場所を指定してください。" << std::endl;
+  std::cout << "着手を入力してください。" << std::endl;
+  std::cout << ">> ";
+  std::string input{};
+  std::cin >> input;
+  OthelloState::coord action{OthelloState::str2Coord(input)};
+
+  while (action == std::make_pair<int, int>(-1, -1) || !state.isLegal(action)) {
+    std::cout << "合法手ではありません。もう一度入力してください。" << std::endl;
+    std::cin.clear();
+    std::cin.ignore(256, '\n');
+    std::cout << ">> ";
+    std::cin >> input;
+    action = OthelloState::str2Coord(input);
+  }
+
+  return action;
+}
+
 void pvp() {
   OthelloState state{};
   while (!state.isFinished()) {
@@ -17,27 +37,7 @@ void pvp() {
 
     state.print();
     std::cout << std::endl;
-
-    std::cout << "石を置く場所を指定してください。" << std::endl;
-    OthelloState::coord action{};
-    std::cout << "着手を入力してください。" << std::endl;
-    std::cout << "このとき、縦方向はA, ..., Hを0, ..., 7に、" << std::endl;
-    std::cout << "横方向は1, ..., 8を0, ..., 7に置き換えて入力してください。" << std::endl;
-    std::cout << ">> ";
-    std::cin >> action.first >> action.second;
-
-    while (!std::cin.good() ||
-        action.first < 0 || action.first >= 8 ||
-        action.second < 0 || action.second >= 8 ||
-        !state.isLegal(action)) {
-      std::cout << "合法手ではありません。もう一度入力してください。" << std::endl;
-      std::cin.clear();
-      std::cin.ignore(256, '\n');
-      std::cout << ">> ";
-      std::cin >> action.first >> action.second;
-    }
-
-    state = state.next(action);
+    state = state.next(getInputCoord(state));
   }
 
   if (state.getScore(OthelloState::kBlackTurn) == 1) {
@@ -88,23 +88,7 @@ void monte_carlo() {
       MonteCarloTreeNode<OthelloState, OthelloState::coord, 2> node{MonteCarloTreeNode<OthelloState, OthelloState::coord, 2>(state, opponent_color, seed_gen())};
       action = node.search();
     } else {
-      std::cout << std::endl;
-
-      std::cout << "石を置く場所を指定してください。" << std::endl;
-      std::cout << "着手を入力してください。" << std::endl;
-      std::cout << "このとき、縦方向はA, ..., Hを0, ..., 7に、" << std::endl;
-      std::cout << "横方向は1, ..., 8を0, ..., 7に置き換えて入力してください。" << std::endl;
-      std::cin >> action.first >> action.second;
-
-      while (!std::cin.good() ||
-             action.first < 0 || action.first >= 8 ||
-             action.second < 0 || action.second >= 8 ||
-             !state.isLegal(action)) {
-        std::cout << "合法手ではありません。もう一度入力してください。" << std::endl;
-        std::cin.clear();
-        std::cin.ignore(256, '\n');
-        std::cin >> action.first >> action.second;
-      }
+      action = getInputCoord(state);
     }
 
     state = state.next(action);

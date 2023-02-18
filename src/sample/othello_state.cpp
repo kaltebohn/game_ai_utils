@@ -171,6 +171,98 @@ std::string OthelloState::board2String() const {
   return result;
 };
 
+OthelloState::coord OthelloState::str2Coord(std::string str) {
+  if (str.size() != 2) {
+    return {-1, -1};
+  }
+
+  coord c{};
+  if (str.at(0) == 'a') {
+    c.first = 0;
+  } else if (str.at(0) == 'b') {
+    c.first = 1;
+  } else if (str.at(0) == 'c') {
+    c.first = 2;
+  } else if (str.at(0) == 'd') {
+    c.first = 3;
+  } else if (str.at(0) == 'e') {
+    c.first = 4;
+  } else if (str.at(0) == 'f') {
+    c.first = 5;
+  } else if (str.at(0) == 'g') {
+    c.first = 6;
+  } else if (str.at(0) == 'h') {
+    c.first = 7;
+  } else {
+    return {-1, -1};
+  }
+  if (str.at(1) == '1') {
+    c.second = 0;
+  } else if (str.at(1) == '2') {
+    c.second = 1;
+  } else if (str.at(1) == '3') {
+    c.second = 2;
+  } else if (str.at(1) == '4') {
+    c.second = 3;
+  } else if (str.at(1) == '5') {
+    c.second = 4;
+  } else if (str.at(1) == '6') {
+    c.second = 5;
+  } else if (str.at(1) == '7') {
+    c.second = 6;
+  } else if (str.at(1) == '8') {
+    c.second = 7;
+  } else {
+    return {-1, -1};
+  }
+
+  return c;
+}
+
+std::string OthelloState::coord2Str(OthelloState::coord c) {
+  std::string s{};
+  if (c.first == 0) {
+    s.push_back('a');
+  } else if (c.first == 1) {
+    s.push_back('b');
+  } else if (c.first == 2) {
+    s.push_back('c');
+  } else if (c.first == 3) {
+    s.push_back('d');
+  } else if (c.first == 4) {
+    s.push_back('e');
+  } else if (c.first == 5) {
+    s.push_back('f');
+  } else if (c.first == 6) {
+    s.push_back('g');
+  } else if (c.first == 7) {
+    s.push_back('h');
+  } else {
+    return "";
+  }
+  if (c.second == 0) {
+    s.push_back('1');
+  } else if (c.second == 1) {
+    s.push_back('2');
+  } else if (c.second == 2) {
+    s.push_back('3');
+  } else if (c.second == 3) {
+    s.push_back('4');
+  } else if (c.second == 4) {
+    s.push_back('5');
+  } else if (c.second == 5) {
+    s.push_back('6');
+  } else if (c.second == 6) {
+    s.push_back('7');
+  } else if (c.second == 7) {
+    s.push_back('8');
+  } else {
+    return "";
+  }
+
+  return s;
+}
+
 OthelloState::bitboard OthelloState::legalBoard() const {
   bitboard my_board{};
   bitboard opponent_board{};

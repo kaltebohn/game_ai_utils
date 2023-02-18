@@ -1,6 +1,7 @@
 #ifndef OTHELLO_STATE_HPP_
 #define OTHELLO_STATE_HPP_
 
+#include <assert.h>
 #include <array>
 #include <iostream>
 #include <vector>
@@ -57,6 +58,10 @@ class OthelloState {
         return 0;
     }
   }
+
+  static coord str2Coord(std::string str);
+
+  static std::string coord2Str(coord c);
 
  private:
   /* マスの表現。A1, B1, ..., H1, A2, ..., H8 の順。 */
