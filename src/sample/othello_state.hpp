@@ -40,7 +40,7 @@ class OthelloState {
   coord getLastAction() const { return this->last_action_; }
 
   /* 現在どちらの手番か。 */
-  int getMyPlayerNum() const { return this->cur_turn_; }
+  int getCurrentPlayerNum() const { return this->cur_turn_; }
 
   /* 盤面を文字列に変換。 */
   std::string board2String() const;

@@ -93,6 +93,11 @@ class MonteCarloTreeNode {
       std::array<double, kNumberOfPlayers> result{};
       for (int i = 0; i < kNumberOfPlayers; i++) {
         result.at(i) = this->current_state_.getScore(i);
+      }
+      /* 得点が負値になると二乗したとき良し悪しがわからなくなるので、得点の最小値を0にする。 */
+      const double min_score{*std::min_element(result.begin(), result.end())};
+      for (int i = 0; i < kNumberOfPlayers; i++) {
+        result.at(i) -= min_score;
         sum_scores_.at(i) += result.at(i);
         sum_scores_squared_.at(i) += result.at(i) * result.at(i);
       }
@@ -161,7 +166,7 @@ class MonteCarloTreeNode {
         [&](auto action) {
           GameState state{GameState(this->current_state_).next(action)};
 
-          return MonteCarloTreeNode(state, state.getMyPlayerNum(), random_seed_, epsilon_, selectForPlayout_);
+          return MonteCarloTreeNode(state, state.getCurrentPlayerNum(), random_seed_, epsilon_, selectForPlayout_);
         });
   }
 
@@ -177,6 +182,10 @@ class MonteCarloTreeNode {
     for (int i = 0; i < kNumberOfPlayers; i++) {
       result.at(i) = state.getScore(i);
     }
+    /* 得点が負値になると二乗したとき良し悪しがわからなくなるので、得点の最小値を0にする。 */
+    const double min_score{*std::min_element(result.begin(), result.end())};
+    std::transform(result.begin(), result.end(), result.begin(),
+        [min_score](int score) { return score - min_score; });
 
     return result;
   }
@@ -213,6 +222,7 @@ class MonteCarloTreeNode {
 
     // デバッグ。7bdc5ad時点で稀にエラーが発生するのでここで出力させる。
     if (actions.size() == 0) {
+      std::cout << "合法手が存在しないエラー。" << std::endl;
       std::cout << first_state;
     }
 

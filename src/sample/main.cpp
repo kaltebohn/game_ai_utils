@@ -28,7 +28,7 @@ OthelloState::coord getInputCoord(const OthelloState& state) {
 void pvp() {
   OthelloState state{};
   while (!state.isFinished()) {
-    if (state.getMyPlayerNum() == OthelloState::kBlackTurn) {
+    if (state.getCurrentPlayerNum() == OthelloState::kBlackTurn) {
       std::cout << "黒の手番" << std::endl;
     } else {
       std::cout << "白の手番" << std::endl;
@@ -72,7 +72,7 @@ void monte_carlo() {
 
   while (!state.isFinished()) {
     std::cout << "********************" << std::endl;
-    if (state.getMyPlayerNum() == OthelloState::kBlackTurn) {
+    if (state.getCurrentPlayerNum() == OthelloState::kBlackTurn) {
       std::cout << "黒の手番" << std::endl;
     } else {
       std::cout << "白の手番" << std::endl;
@@ -83,7 +83,7 @@ void monte_carlo() {
 
     state.print();
     OthelloState::coord action{};
-    if (state.getMyPlayerNum() != player_color) {
+    if (state.getCurrentPlayerNum() != player_color) {
       int opponent_color{player_color == OthelloState::kBlackTurn ? OthelloState::kWhiteTurn : OthelloState::kBlackTurn};
       MonteCarloTreeNode<OthelloState, OthelloState::coord, 2> node{MonteCarloTreeNode<OthelloState, OthelloState::coord, 2>(state, opponent_color, seed_gen())};
       action = node.search();
