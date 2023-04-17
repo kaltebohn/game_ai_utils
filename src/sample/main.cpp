@@ -2,16 +2,18 @@
 #include <string.h>
 #include <iostream>
 
+#include "../primitive_monte_carlo_root.hpp"
 #include "../monte_carlo_tree_node.hpp"
+#include "othello_observation.hpp"
 #include "othello_state.hpp"
 
-OthelloState::coord getInputCoord(const OthelloState& state) {
+coord getPlayerInput(const OthelloState& state) {
   std::cout << "石を置く場所を指定してください。" << std::endl;
   std::cout << "着手を入力してください。" << std::endl;
   std::cout << ">> ";
   std::string input{};
   std::cin >> input;
-  OthelloState::coord action{OthelloState::str2Coord(input)};
+  coord action{OthelloState::str2Coord(input)};
 
   while (action == std::make_pair<int, int>(-1, -1) || !state.isLegal(action)) {
     std::cout << "合法手ではありません。もう一度入力してください。" << std::endl;
@@ -23,6 +25,33 @@ OthelloState::coord getInputCoord(const OthelloState& state) {
   }
 
   return action;
+}
+
+coord getPMCInput(const OthelloState& state) {
+  /* 乱数のシード生成器。 */
+  std::random_device seed_gen;
+
+  PrimitiveMonteCarloRoot<OthelloState, OthelloObservation, coord, 2> node =
+      PrimitiveMonteCarloRoot<OthelloState, OthelloObservation, coord, 2>
+      (state.getObservation(), state.getCurrentPlayerNum(),
+      [](const OthelloObservation& observation) {
+        return OthelloState{
+          observation.black_board_,
+          observation.white_board_,
+          observation.cur_turn_
+        };
+      });
+  return node.search();
+}
+
+coord getMCTSInput(const OthelloState& state) {
+  /* 乱数のシード生成器。 */
+  std::random_device seed_gen;
+
+  MonteCarloTreeNode<OthelloState, coord, 2> node =
+      MonteCarloTreeNode<OthelloState, coord, 2>
+      (state, state.getCurrentPlayerNum(), {-1, -1}, seed_gen());
+  return node.search();
 }
 
 void pvp() {
@@ -37,7 +66,7 @@ void pvp() {
 
     state.print();
     std::cout << std::endl;
-    state = state.next(getInputCoord(state));
+    state = state.next(getPlayerInput(state));
   }
 
   if (state.getScore(OthelloState::kBlackTurn) == 1) {
@@ -52,9 +81,6 @@ void pvp() {
 void monte_carlo() {
   /* ゲームの状態。 */
   OthelloState state{};
-
-  /* 乱数のシード生成器。 */
-  std::random_device seed_gen;
 
   int player_color;
   int tmp;
@@ -82,13 +108,12 @@ void monte_carlo() {
     std::cout << "********************" << std::endl;
 
     state.print();
-    OthelloState::coord action{};
+    coord action{};
     if (state.getCurrentPlayerNum() != player_color) {
-      int opponent_color{player_color == OthelloState::kBlackTurn ? OthelloState::kWhiteTurn : OthelloState::kBlackTurn};
-      MonteCarloTreeNode<OthelloState, OthelloState::coord, 2> node{MonteCarloTreeNode<OthelloState, OthelloState::coord, 2>(state, opponent_color, {-1, -1}, seed_gen())};
-      action = node.search();
+      action = getPMCInput(state);
+      // action = getMCTSInput(state);
     } else {
-      action = getInputCoord(state);
+      action = getPlayerInput(state);
     }
 
     state = state.next(action);

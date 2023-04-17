@@ -1,6 +1,6 @@
 #include "othello_state.hpp"
 
-const std::array<OthelloState::bitboard, 64> OthelloState::kSquare{
+const std::array<bitboard, 64> OthelloState::kSquare{
     0x80'00'00'00'00'00'00'00, 0x40'00'00'00'00'00'00'00,
     0x20'00'00'00'00'00'00'00, 0x10'00'00'00'00'00'00'00,
     0x08'00'00'00'00'00'00'00, 0x04'00'00'00'00'00'00'00,
@@ -35,7 +35,7 @@ const std::array<OthelloState::bitboard, 64> OthelloState::kSquare{
     0x00'00'00'00'00'00'00'02, 0x00'00'00'00'00'00'00'01};
 
 OthelloState OthelloState::next(const coord& action) const {
-  const bitboard put{OthelloState::coord2Bit(action)};
+  const bitboard put{coord2Bit(action)};
 
   bitboard my_board{};
   bitboard opponent_board{};
@@ -84,7 +84,7 @@ OthelloState OthelloState::next(const coord& action) const {
   return result;
 }
 
-std::vector<OthelloState::coord> OthelloState::legalActions() const {
+std::vector<coord> OthelloState::legalActions() const {
   std::vector<coord> result{};
   bitboard tmp{this->legalBoard()};
   for (int i = 7; i >= 0; i--) {
@@ -170,7 +170,7 @@ std::string OthelloState::board2String() const {
   return result;
 };
 
-OthelloState::coord OthelloState::str2Coord(std::string str) {
+coord OthelloState::str2Coord(std::string str) {
   if (str.size() != 2) {
     return {-1, -1};
   }
@@ -218,7 +218,7 @@ OthelloState::coord OthelloState::str2Coord(std::string str) {
   return c;
 }
 
-std::string OthelloState::coord2Str(OthelloState::coord c) {
+std::string coord2Str(coord c) {
   std::string s{};
   if (c.first == 0) {
     s.push_back('a');
@@ -262,7 +262,7 @@ std::string OthelloState::coord2Str(OthelloState::coord c) {
   return s;
 }
 
-OthelloState::bitboard OthelloState::legalBoard() const {
+bitboard OthelloState::legalBoard() const {
   bitboard my_board{};
   bitboard opponent_board{};
   if (this->cur_turn_ == OthelloState::kBlackTurn) {
@@ -348,7 +348,7 @@ OthelloState::bitboard OthelloState::legalBoard() const {
   return result;
 }
 
-OthelloState::bitboard OthelloState::nextSquare(const bitboard square, const int direction) const {
+bitboard OthelloState::nextSquare(const bitboard square, const int direction) const {
   /* 8方向について、1つ先に移動できればその場所に1が立ったbit表現を返す。 */
   switch (direction) {
     case 0:  // 上。下には移動できないので、一番下はbitが立っていない。
