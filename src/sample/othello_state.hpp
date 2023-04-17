@@ -76,9 +76,6 @@ class OthelloState {
   /* 置ける場所の一覧をbit表現で返す。 */
   bitboard legalBoard() const;
 
-  /* 着手のbit表現を受け取り、次の局面のbit表現を返す。 */
-  bitboard nextBoard(const bitboard put) const;
-
   /* squareをdirectionの向きに移す。 */
   bitboard nextSquare(const bitboard square, int direction) const;
 
