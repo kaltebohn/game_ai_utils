@@ -28,10 +28,7 @@ class MonteCarloTreeNode {
     this->expand();
 
     /* 探索できない。 */
-    if (this->children_.size() <= 0) {
-      std::cerr << "子節点がありません。" << std::endl;
-      std::terminate();
-    }
+    assert(this->children_.size() > 0);
 
     /* 手が1つしかないなら、それを出す。 */
     if (this->children_.size() == 1) {
@@ -133,10 +130,7 @@ class MonteCarloTreeNode {
 
   /* 子節点中で最も評価値の高いものを返す。 */
   MonteCarloTreeNode<GameState, GameAction, kNumberOfPlayers>& selectChildToSearch(int whole_play_cnt) {
-    if (this->children_.size() <= 0) {
-      std::cerr << "子節点がありません。" << std::endl;
-      std::terminate();
-    }
+    assert(this->children_.size() > 0);
 
     return *std::max_element(
         this->children_.begin(), this->children_.end(),
@@ -147,10 +141,7 @@ class MonteCarloTreeNode {
 
   /* 子節点中で最も勝率の高いものを返す。 */
   MonteCarloTreeNode<GameState, GameAction, kNumberOfPlayers>& selectChildWithBestMeanScore() {
-    if (this->children_.size() <= 0) {
-      std::cerr << "子節点がありません。" << std::endl;
-      std::terminate();
-    }
+    assert(this->children_.size() > 0);
 
     return *std::max_element(
         this->children_.begin(), this->children_.end(),
