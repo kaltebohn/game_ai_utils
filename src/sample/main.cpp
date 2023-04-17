@@ -85,7 +85,7 @@ void monte_carlo() {
     OthelloState::coord action{};
     if (state.getCurrentPlayerNum() != player_color) {
       int opponent_color{player_color == OthelloState::kBlackTurn ? OthelloState::kWhiteTurn : OthelloState::kBlackTurn};
-      MonteCarloTreeNode<OthelloState, OthelloState::coord, 2> node{MonteCarloTreeNode<OthelloState, OthelloState::coord, 2>(state, opponent_color, seed_gen())};
+      MonteCarloTreeNode<OthelloState, OthelloState::coord, 2> node{MonteCarloTreeNode<OthelloState, OthelloState::coord, 2>(state, opponent_color, {-1, -1}, seed_gen())};
       action = node.search();
     } else {
       action = getInputCoord(state);

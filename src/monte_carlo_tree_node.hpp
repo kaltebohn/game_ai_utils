@@ -18,8 +18,8 @@ class MonteCarloTreeNode {
   /* このクラスをvectorで扱うために必要。 */
   MonteCarloTreeNode() : current_state_(), player_num_() {}
 
-  MonteCarloTreeNode(const GameState& state, const int player_num, const unsigned int random_seed = 0, const float epsilon = 0.0, std::function<GameAction(const GameState&, XorShift64&)> selectForPlayout = randomAction)
-      : current_state_(state), player_num_(player_num), random_seed_(random_seed), random_engine_(random_seed_), selectForPlayout_(selectForPlayout), epsilon_(epsilon) {}
+  MonteCarloTreeNode(const GameState& state, const int player_num, const GameAction& last_action, const unsigned int random_seed = 0, const float epsilon = 0.0, std::function<GameAction(const GameState&, XorShift64&)> selectForPlayout = randomAction)
+      : current_state_(state), player_num_(player_num), last_action_(last_action), random_seed_(random_seed), random_engine_(random_seed_), selectForPlayout_(selectForPlayout), epsilon_(epsilon) {}
 
   /* 根用。クラスの外側から探索を指示されて最善手を返す。 */
   GameAction search() {
@@ -35,7 +35,7 @@ class MonteCarloTreeNode {
 
     /* 手が1つしかないなら、それを出す。 */
     if (this->children_.size() == 1) {
-      return this->children_.at(0).current_state_.getLastAction();
+      return this->children_.at(0).last_action_;
     }
 
     /* 探索。とりあえず、時間ではなく回数で探索に制限をかける。 */
@@ -64,7 +64,7 @@ class MonteCarloTreeNode {
     }
 
     /* 最善手を選んで返す。 */
-    return this->selectChildWithBestMeanScore().current_state_.getLastAction();
+    return this->selectChildWithBestMeanScore().last_action_;
   }
 
  private:
@@ -73,8 +73,9 @@ class MonteCarloTreeNode {
   static constexpr int kExpandThreshold{3};  // 何回探索されたら節点を展開するか。
   static constexpr double kEvaluationMax{std::numeric_limits<double>::infinity()}; // 評価値の上限。
 
-  GameState current_state_;              // 現在の局面情報。
-  int player_num_;                       // 自分のプレイヤ番号。
+  GameState current_state_;  // 現在の局面情報。
+  int player_num_;           // 自分のプレイヤ番号。
+  GameAction last_action_{}; // この節点に遷移した際の行動。
   std::vector<MonteCarloTreeNode> children_{}; // 子節点(あり得る局面の集合)。
   int play_cnt_{};                             // この節点を探索した回数。
   std::array<double, kNumberOfPlayers> sum_scores_{}; // この局面を通るプレイアウトで得られた各プレイヤの総得点。勝1点負0点制なら勝利数と一致する。
@@ -166,7 +167,7 @@ class MonteCarloTreeNode {
         [&](auto action) {
           GameState state{GameState(this->current_state_).next(action)};
 
-          return MonteCarloTreeNode(state, state.getCurrentPlayerNum(), random_seed_, epsilon_, selectForPlayout_);
+          return MonteCarloTreeNode(state, state.getCurrentPlayerNum(), action, random_seed_, epsilon_, selectForPlayout_);
         });
   }
 

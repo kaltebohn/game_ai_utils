@@ -36,9 +36,6 @@ class OthelloState {
   /* 指定されたプレイヤ番号の現時点での得点を返す。 */
   int getScore(const int player_num) const;
 
-  /* 最後の着手(この盤面に至ったときの着手)を返す。 */
-  coord getLastAction() const { return this->last_action_; }
-
   /* 現在どちらの手番か。 */
   int getCurrentPlayerNum() const { return this->cur_turn_; }
 
@@ -70,7 +67,6 @@ class OthelloState {
   bitboard black_board_{0x00'00'00'08'10'00'00'00};
   bitboard white_board_{0x00'00'00'10'08'00'00'00};
   int cur_turn_{OthelloState::kBlackTurn};
-  coord last_action_{};
 
   /* 合法手か。 */
   bool isLegal(const bitboard put) const {

@@ -67,7 +67,6 @@ OthelloState OthelloState::next(const coord& action) const {
   opponent_board ^= reversed_squares;
 
   OthelloState result{*this};
-  result.last_action_ = action;
   if (this->cur_turn_ == OthelloState::kBlackTurn) {
     result.cur_turn_ = kWhiteTurn;
     result.black_board_ = my_board;
@@ -393,8 +392,5 @@ std::ostream& operator<<(std::ostream& os, const OthelloState& src) {
   os << "# 現在のプレイヤ" << std::endl;
     os << ((src.cur_turn_ == OthelloState::kBlackTurn) ?
         "黒" : "白") << std::endl;
-  os << "# 最後の着手" << std::endl;
-  os << "(" << src.last_action_.first << ", "
-      << src.last_action_.second << ")" << std::endl;
   return os;
 }
