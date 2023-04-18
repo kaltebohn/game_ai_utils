@@ -6,6 +6,7 @@
 #include "../monte_carlo_tree_node.hpp"
 #include "othello_observation.hpp"
 #include "othello_state.hpp"
+#include "othello_state_estimator.hpp"
 
 coord getPlayerInput(const OthelloState& state) {
   std::cout << "石を置く場所を指定してください。" << std::endl;
@@ -28,19 +29,12 @@ coord getPlayerInput(const OthelloState& state) {
 }
 
 coord getPMCInput(const OthelloState& state) {
-  /* 乱数のシード生成器。 */
-  std::random_device seed_gen;
+  std::random_device seed_gen; // 乱数のシード生成器。
+  OthelloStateEstimator estimator{}; // 状態推定器。オセロは完全情報ゲームなので、形だけ。
 
-  PrimitiveMonteCarloRoot<OthelloState, OthelloObservation, coord, 2> node =
-      PrimitiveMonteCarloRoot<OthelloState, OthelloObservation, coord, 2>
-      (state.getObservation(), state.getCurrentPlayerNum(),
-      [](const OthelloObservation& observation) {
-        return OthelloState{
-          observation.black_board_,
-          observation.white_board_,
-          observation.cur_turn_
-        };
-      });
+  PrimitiveMonteCarloRoot<OthelloState, OthelloObservation, OthelloStateEstimator, coord, 2> node =
+      PrimitiveMonteCarloRoot<OthelloState, OthelloObservation, OthelloStateEstimator, coord, 2>
+      (state.getObservation(), estimator, state.getCurrentPlayerNum());
   return node.search();
 }
 

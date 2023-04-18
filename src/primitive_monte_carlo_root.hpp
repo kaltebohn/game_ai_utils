@@ -5,11 +5,11 @@
 
 #include "primitive_monte_carlo_leaf.hpp"
 
-template <class GameState, class GameObservation, typename GameAction, int kNumberOfPlayers>
+template <class GameState, class GameObservation, class StateEstimator, typename GameAction, int kNumberOfPlayers>
 class PrimitiveMonteCarloRoot {
  public:
-  PrimitiveMonteCarloRoot(const GameObservation& observation, const int player_num, std::function<GameState(const GameObservation&)> estimate_state)
-      : observation_(observation), player_num_(player_num), estimate_state_(estimate_state) {}
+  PrimitiveMonteCarloRoot(const GameObservation& observation, StateEstimator& estimator, const int player_num)
+      : observation_(observation), player_num_(player_num), state_estimator_(estimator) {}
 
   GameAction search() {
     this->expand();
@@ -37,13 +37,13 @@ class PrimitiveMonteCarloRoot {
 
   GameObservation observation_; // 現在の局面情報。
   int player_num_;              // 自分のプレイヤ番号。
-  std::function<GameState(const GameObservation&)> estimate_state_;
+  StateEstimator state_estimator_;
   std::vector<PrimitiveMonteCarloLeaf<GameState, GameAction, kNumberOfPlayers>> children_{}; // 子節点(あり得る局面の集合)。
 
   /* 可能な次局面すべてを子節点として追加。 */
   void expand() {
     /* 現在状態を推定。 */
-    const GameState current_state{this->estimate_state_(this->observation_)};
+    const GameState current_state{this->state_estimator_.estimate(this->observation_)};
 
     /* 子節点を作る。 */
     const std::vector<GameAction> actions{this->observation_.legal_actions_};
