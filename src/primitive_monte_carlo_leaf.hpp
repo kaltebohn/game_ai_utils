@@ -4,6 +4,8 @@
 #include <functional>
 #include <random>
 
+#include <iostream>
+
 #include "xorshift64.hpp"
 
 template <class GameState, typename GameAction, int kNumberOfPlayers>
