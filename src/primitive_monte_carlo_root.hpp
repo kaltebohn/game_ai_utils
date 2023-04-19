@@ -23,7 +23,7 @@ class PrimitiveMonteCarloRoot {
     }
 
     /* 評価。とりあえず、時間ではなく回数で評価回数に制限をかける。 */
-    for (int whole_play_cnt = 0; whole_play_cnt < PrimitiveMonteCarloRoot::kPlayoutLimit * this->children_.size(); whole_play_cnt++) {
+    for (int whole_play_cnt = 0; whole_play_cnt < PrimitiveMonteCarloRoot::kPlayoutLimit * (int)this->children_.size(); whole_play_cnt++) {
       PrimitiveMonteCarloLeaf<GameState, GameAction, kNumberOfPlayers>& child{this->selectChildToSearch(whole_play_cnt)};
       child.playout();
     }
