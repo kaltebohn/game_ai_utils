@@ -40,11 +40,7 @@ class PrimitiveMonteCarloLeaf {
     /* 得点をMin-Max正規化。 */
     const double min_score{*std::min_element(result.begin(), result.end())};
     const double max_score{*std::max_element(result.begin(), result.end())};
-    /* 現在(kirschtore:master:c4036e0)、ここで引っかかる場合が確認されたのでデバッグ出力を設けている。 */
-    if (max_score <= min_score) {
-      std::cerr << state << std::endl;
-    }
-    assert(max_score > min_score);
+    if (min_score == max_score) { continue; } // もし全員0点(UNOで全員が0のカードを持っている場合など)なら結果反映の必要なし。
     std::transform(result.begin(), result.end(), result.begin(),
         [max_score, min_score](int score) { return (score - min_score) / (max_score - min_score); });
 
