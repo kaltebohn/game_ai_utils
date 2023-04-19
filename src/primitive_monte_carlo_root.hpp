@@ -25,7 +25,8 @@ class PrimitiveMonteCarloRoot {
     /* 評価。とりあえず、時間ではなく回数で評価回数に制限をかける。 */
     for (int whole_play_cnt = 0; whole_play_cnt < PrimitiveMonteCarloRoot::kPlayoutLimit * (int)this->children_.size(); whole_play_cnt++) {
       PrimitiveMonteCarloLeaf<GameState, GameAction, kNumberOfPlayers>& child{this->selectChildToSearch(whole_play_cnt)};
-      child.playout();
+      const GameState current_state{this->state_estimator_.estimate(this->observation_)}; // 現在状態を推定。
+      child.playout(current_state.next(child.getLastAction()));
     }
 
     /* 最善手を選んで返す。 */
@@ -42,16 +43,12 @@ class PrimitiveMonteCarloRoot {
 
   /* 可能な次局面すべてを子節点として追加。 */
   void expand() {
-    /* 現在状態を推定。 */
-    const GameState current_state{this->state_estimator_.estimate(this->observation_)};
-
-    /* 子節点を作る。 */
+    /* 子節点を作る。不完全情報ゲームで探索毎に状態を推定する場合のために、葉には状態を持たせない。 */
     const std::vector<GameAction> actions{this->observation_.legal_actions_};
     this->children_.resize(actions.size());
     std::transform(actions.begin(), actions.end(), this->children_.begin(),
         [&](auto action) {
-          GameState state{GameState(current_state).next(action)};
-          return PrimitiveMonteCarloLeaf<GameState, GameAction, kNumberOfPlayers>(state, action);
+          return PrimitiveMonteCarloLeaf<GameState, GameAction, kNumberOfPlayers>(action);
         });
   }
 

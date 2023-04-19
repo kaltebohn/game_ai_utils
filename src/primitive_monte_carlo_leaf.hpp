@@ -12,13 +12,13 @@ template <class GameState, typename GameAction, int kNumberOfPlayers>
 class PrimitiveMonteCarloLeaf {
  public:
   /* このクラスをvectorで扱うために必要。 */
-  PrimitiveMonteCarloLeaf() : state_(), last_action_() {}
+  PrimitiveMonteCarloLeaf() : last_action_() {}
 
-  PrimitiveMonteCarloLeaf(const GameState& state, const GameAction action, std::function<GameAction(const GameState&, XorShift64&)> playout_policy = randomAction)
-      : state_(state), last_action_(action), playout_policy_(playout_policy) {}
+  PrimitiveMonteCarloLeaf(const GameAction action, std::function<GameAction(const GameState&, XorShift64&)> playout_policy = randomAction)
+      : last_action_(action), playout_policy_(playout_policy) {}
 
-  /* プレイアウトを実施し、結果を返す。 */
-  void playout() {
+  /* この葉節点から見て現在の状態からプレイアウトを実施し、結果を返す。 */
+  void playout(const GameState& current_state) {
     this->play_cnt_++;
 
     /* 乱数生成器。 */
@@ -26,7 +26,7 @@ class PrimitiveMonteCarloLeaf {
     XorShift64 random_engine{seed_gen()};
 
     /* プレイアウト。 */
-    GameState state{this->state_};
+    GameState state{current_state};
     while (!state.isFinished()) {
       state = state.next(this->playout_policy_(state, random_engine));
     }
@@ -64,7 +64,6 @@ class PrimitiveMonteCarloLeaf {
  private:
   static constexpr double kEvaluationMax{std::numeric_limits<double>::infinity()}; // 評価値の上限。
 
-  GameState state_;
   GameAction last_action_;
   std::function<GameAction(const GameState&, XorShift64&)> playout_policy_;
   int play_cnt_{};
