@@ -186,7 +186,10 @@ class MonteCarloTreeNode {
     /* 得点をMin-Max正規化。 */
     const double min_score{*std::min_element(result.begin(), result.end())};
     const double max_score{*std::max_element(result.begin(), result.end())};
-    if (min_score == max_score) { continue; } // もし全員0点(UNOで全員が0のカードを持っている場合など)なら結果反映の必要なし。
+    if (min_score == max_score) {
+      /* もし全員0点(UNOで全員が0のカードを持っている場合など)なら、正規化できないのでそのまま返す。*/
+      return result;
+    }
     std::transform(result.begin(), result.end(), result.begin(),
         [max_score, min_score](int score) { return (score - min_score) / (max_score - min_score); });
 
