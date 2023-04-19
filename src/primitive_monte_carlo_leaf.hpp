@@ -36,10 +36,17 @@ class PrimitiveMonteCarloLeaf {
     for (int i = 0; i < kNumberOfPlayers; i++) {
       result.at(i) = state.getScore(i);
     }
-    /* 得点が負値になると二乗したとき良し悪しがわからなくなるので、得点の最小値を0にする。 */
+
+    /* 得点をMin-Max正規化。 */
     const double min_score{*std::min_element(result.begin(), result.end())};
+    const double max_score{*std::max_element(result.begin(), result.end())};
+    /* 現在(kirschtore:master:c4036e0)、ここで引っかかる場合が確認されたのでデバッグ出力を設けている。 */
+    if (max_score <= min_score) {
+      std::cerr << state << std::endl;
+    }
+    assert(max_score > min_score);
     std::transform(result.begin(), result.end(), result.begin(),
-        [min_score](int score) { return score - min_score; });
+        [max_score, min_score](int score) { return (score - min_score) / (max_score - min_score); });
 
     /* 結果を反映。 */
     for (int i = 0; i < kNumberOfPlayers; i++) {

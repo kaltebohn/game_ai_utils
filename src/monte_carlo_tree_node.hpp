@@ -92,10 +92,15 @@ class MonteCarloTreeNode {
       for (int i = 0; i < kNumberOfPlayers; i++) {
         result.at(i) = this->current_state_.getScore(i);
       }
-      /* 得点が負値になると二乗したとき良し悪しがわからなくなるので、得点の最小値を0にする。 */
+
+      /* 得点をmin-max正規化。 */
       const double min_score{*std::min_element(result.begin(), result.end())};
+      const double max_score{*std::max_element(result.begin(), result.end())};
+      assert(max_score > min_score);
+      std::transform(result.begin(), result.end(), result.begin(),
+      [max_score, min_score](int score) { return (score - min_score) / (max_score - min_score); });
+
       for (int i = 0; i < kNumberOfPlayers; i++) {
-        result.at(i) -= min_score;
         sum_scores_.at(i) += result.at(i);
         sum_scores_squared_.at(i) += result.at(i) * result.at(i);
       }
@@ -174,10 +179,13 @@ class MonteCarloTreeNode {
     for (int i = 0; i < kNumberOfPlayers; i++) {
       result.at(i) = state.getScore(i);
     }
-    /* 得点が負値になると二乗したとき良し悪しがわからなくなるので、得点の最小値を0にする。 */
+
+    /* 得点をMin-Max正規化。 */
     const double min_score{*std::min_element(result.begin(), result.end())};
+    const double max_score{*std::max_element(result.begin(), result.end())};
+    assert(max_score > min_score);
     std::transform(result.begin(), result.end(), result.begin(),
-        [min_score](int score) { return score - min_score; });
+        [max_score, min_score](int score) { return (score - min_score) / (max_score - min_score); });
 
     return result;
   }
