@@ -14,11 +14,11 @@ class PrimitiveMonteCarloLeaf {
   /* このクラスをvectorで扱うために必要。 */
   PrimitiveMonteCarloLeaf() : last_action_() {}
 
-  PrimitiveMonteCarloLeaf(const GameAction action, std::function<GameAction(const GameState&, XorShift64&)> playout_policy = randomAction)
-      : last_action_(action), playout_policy_(playout_policy) {}
+  PrimitiveMonteCarloLeaf(const GameAction action)
+      : last_action_(action) {}
 
   /* この葉節点から見て現在の状態からプレイアウトを実施し、結果を返す。 */
-  void playout(const GameState& current_state) {
+  void playout(const GameState& current_state, std::function<GameAction(const GameState&, XorShift64&)> playout_policy) {
     this->play_cnt_++;
 
     /* 乱数生成器。 */
@@ -28,7 +28,7 @@ class PrimitiveMonteCarloLeaf {
     /* プレイアウト。 */
     GameState state{current_state};
     while (!state.isFinished()) {
-      state = state.next(this->playout_policy_(state, random_engine));
+      state = state.next(playout_policy(state, random_engine));
     }
 
     /* 評価。 */
@@ -68,7 +68,6 @@ class PrimitiveMonteCarloLeaf {
   static constexpr double kEvaluationMax{std::numeric_limits<double>::infinity()}; // 評価値の上限。
 
   GameAction last_action_;
-  std::function<GameAction(const GameState&, XorShift64&)> playout_policy_;
   int play_cnt_{};
   std::array<double, kNumberOfPlayers> sum_scores_{}; // この局面を通るプレイアウトで得られた各プレイヤの総得点。勝1点負0点制なら勝利数と一致する。
   std::array<double, kNumberOfPlayers> sum_scores_squared_{}; // この局面を通るプレイアウトで得られた各プレイヤの得点の二乗値の総和。
@@ -85,20 +84,6 @@ class PrimitiveMonteCarloLeaf {
     const double variance = score_squared - mean * mean;
     const double v = variance + std::sqrt(2.0 * std::log2(whole_play_cnt) / play_cnt);
     return (play_cnt <= 0) ? kEvaluationMax : (double)score / play_cnt + std::sqrt(std::log2(whole_play_cnt) / play_cnt * std::min(0.25, v));
-  }
-
-  static GameAction randomAction(const GameState& first_state, XorShift64& random_engine) {
-    std::vector<GameAction> actions{first_state.legalActions()};
-    if (actions.size() == 1) { return actions.at(0); } // 一手しかないなら、それを出す。
-
-    // デバッグ。7bdc5ad時点で稀にエラーが発生するのでここで出力させる。
-    if (actions.size() == 0) {
-      std::cout << "合法手が存在しないエラー。" << std::endl;
-      std::cout << first_state;
-    }
-
-    std::uniform_int_distribution<int> dist(0, actions.size() - 1);
-    return actions.at(dist(random_engine));
   }
 };
 
