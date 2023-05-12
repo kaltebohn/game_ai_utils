@@ -34,7 +34,7 @@ class PrimitiveMonteCarloRoot {
   }
 
  private:
-  static constexpr int kPlayoutLimit{2000};  // プレイアウト回数の制限。
+  static constexpr int kPlayoutLimit{1000};  // プレイアウト回数の制限。
 
   GameObservation observation_; // 現在の局面情報。
   int player_num_;              // 自分のプレイヤ番号。
