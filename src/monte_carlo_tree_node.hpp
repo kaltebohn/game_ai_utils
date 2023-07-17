@@ -1,6 +1,7 @@
 #ifndef MONTE_CARLO_TREE_NODE_HPP_
 #define MONTE_CARLO_TREE_NODE_HPP_
 
+#include <cassert>
 #include <algorithm>
 #include <functional>
 #include <iostream>
@@ -65,7 +66,7 @@ class MonteCarloTreeNode {
   }
 
   /* Simulation BalancingでMinMaxの推定値を求めるのに使う。 */
-  std::array<double, kNumberOfPlayers> double getSumScores() { return sum_scores_; }
+  std::array<double, kNumberOfPlayers> getSumScores() { return sum_scores_; }
 
  private:
   static constexpr bool kIsDebugMode{false}; // デバッグ出力あり？
