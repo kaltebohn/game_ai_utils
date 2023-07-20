@@ -66,7 +66,9 @@ class MonteCarloTreeNode {
   }
 
   /* Simulation BalancingでMinMaxの推定値を求めるのに使う。 */
-  std::array<double, kNumberOfPlayers> getSumScores() { return sum_scores_; }
+  double getEstimatedMinMaxScore(const int player_num) {
+    return this->selectChildWithBestMeanScore().meanScore(player_num);
+  }
 
  private:
   static constexpr bool kIsDebugMode{false}; // デバッグ出力あり？
