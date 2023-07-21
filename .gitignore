@@ -1,0 +1,10 @@
+tmp/
+out/
+
+*.log
+
+# vscode
+.history/
+.vscode/
+*.code-workspace
+
