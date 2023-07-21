@@ -1,0 +1,14 @@
+tmp/
+doc/
+out/
+
+*.log
+
+# vscode
+.history/
+.vscode/
+*.code-workspace
+
+# node.js
+node_modules/
+
